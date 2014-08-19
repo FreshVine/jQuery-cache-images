@@ -27,7 +27,7 @@ This will watch for changes to the parent and all child elements for changes tha
 Allows you to easily drop caching into your dom additions. It will look at the cached files, and if none exist, it will insert the default image, and attempt to fetch the specified image.  
 
 ### Manually caching an image  
-`cacheImageFetchURL('http://upload.wikimedia.org/wikipedia/commons/9/92/Muraltmuur.jpg');`  
+`cacheImagesFetchURL('http://upload.wikimedia.org/wikipedia/commons/9/92/Muraltmuur.jpg');`  
   
 Attempts to cache that image into your clients browser local storage. This can be very helpful if you have an app where you are storying data into webSQL or IndexedDB and want to grab images during an initial sync, but those images might not be needed until later. By caching the images earily you ensure that they would be available along with the other data.  
   

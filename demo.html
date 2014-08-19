@@ -65,7 +65,7 @@
 								var items = [];
 
 								$.each( data.items, function( key, photo ) {
-									// cacheImageFetchURL( photo.media.m );	// Cache the image for later use
+									// cacheImagesFetchURL( photo.media.m );	// Cache the image for later use
 
 									$('#flickrTest').append( $('<img />').cacheImages({url: photo.media.m}) );	// Using the caching immediately
 								});

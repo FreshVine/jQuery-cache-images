@@ -210,7 +210,7 @@
 	/*
 	 *	Manually cache an image into the local storage
 	 */
-	window.cacheImageFetchURL = function( url ){
+	window.cacheImagesFetchURL = function( url ){
 		$('body').append( $('<img style="display: none;" />').addClass('cacheImagesRemove').cacheImages({url: url}) );
 	};
 	/*
