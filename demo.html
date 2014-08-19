@@ -18,10 +18,10 @@
 	<p>Use the following buttons to perform some basic checks on the cache</p>
 	<p>
 		<button id="cacheLoadAll">Display all cached images</button>
+		<button onclick="$('#statWindow').html('');">Empty Display</button>
 		<button id="dropCache">Empty the Cache</button>
 	</p>
 	<div id="statWindow" style="text-align: center; border: 5px solid; min-height: 40px;"></div>
-	<div style="text-align: right;"><button onclick="$('#statWindow').html('');">Empty Display</button></div>
 
 	<p>Images are kept in browser's Local Storage as a base64 encoded string. </p>
 
@@ -35,7 +35,6 @@
 	<h2>Flickr Test</h2>
 	<div>
 		Here is a dynamic example where we will fetch a bunch of images from Flickr, dynamically insert them into the page, and they all get cached.
-		<pre></pre>
 		<br />
 		<button id="FlickrTest">Load Some Flickr Images</button>
 	</div>
@@ -52,7 +51,23 @@
 			$(document).on('click','#dropCache', function(){ cacheImagesDrop();	});
 			$(document).on('click','#cacheLoadAll', function(){	cacheImagesShowAll( $('#statWindow') ); });
 			$(document).on('click','#FlickrTest', function(){
-				
+				var jxhr = $.ajax( 'http://api.flickr.com/services/feeds/photos_public.gne?tags=paris,church&lang=en-us&format=json',
+							{ type: 'get',
+								dataType: 'jsonp',
+								jsonpCallback: 'jsonFlickrFeed',
+								data: {'tags': 'goat,pasture',
+								 		'lang': 'en-us',
+										'format': 'json'},
+							})
+							.done( function( data, textStatus, jqXHR ){
+								var items = [];
+
+								$.each( data.items, function( key, photo ) {
+									// cacheImageFetchURL( photo.media.m );	// Cache the image for later use
+
+									$('#flickrTest').append( $('<img />').cacheImages({url: photo.media.m}) );	// Using the caching immediately
+								});
+							});
 			});
 		});
 
@@ -78,6 +93,8 @@
 			// Show the images we found
 			for( i = 0; i < cacheKeys.length; i++ ){
 				// if( $('#' + cacheKeys[i] ).length > 0 ){ continue; }
+				if(  window.localStorage.getItem( cacheKeys[i] ) === 'pending' ){ continue; }
+				if(  window.localStorage.getItem( cacheKeys[i] ) === 'error' ){ continue; }
 
 				container.append( $('<img />').prop( 'src', window.localStorage.getItem( cacheKeys[i] ) ).width('25%') );
 			}
