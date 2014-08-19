@@ -32,6 +32,15 @@
 
 		var self = this;
 
+
+		/*
+		 * Ensure we have the default image cached and ready for use
+		 */
+		if( /^data:image/.test( window.cacheImagesConfig.defaultImage ) === false ){
+			window.cacheImagesConfig.defaultSrc = window.cacheImagesConfig.defaultImage;
+		}
+
+
 		/*
 		 *	Takes the image and uses a canvas element to encode the media
 		 *	response | string | this is the raw XHR resposne data
@@ -141,7 +150,7 @@
 					$this.prop('src', localSrcEncoded);
 				}else{
 					// The image has not yet been cached, so we need to get on that.
-					$this.prop('src', src);
+					$this.prop('src', '');	// This will cancel the request if it hasn't already been finished
 					var imgType = src.match(/\.(jpg|jpeg|png|gif)$/i);	// Break out the filename to get the type
 					if( imgType && imgType.length){	// Get us the type of file
 						imgType = imgType[1].toLowerCase() == 'jpg' ? 'jpeg' : imgType[1].toLowerCase();
@@ -158,7 +167,7 @@
 								localStorage[key] = src = base64EncodeCanvas( img );
 								if( src.substring(0,5) === 'data:' ){
 									$this.prop('src', localStorage[key] );
-									if( $this.data('cacheImagesRemove') === 'true' ){
+									if( $this.is('.cacheImagesRemove') ){
 										$this.remove();
 									}
 								}
@@ -167,15 +176,26 @@
 							var xhr = new XMLHttpRequest();
 							xhr.open('GET', src, true);
 							xhr.responseType = 'arraybuffer'; // Cannot use the jQuery ajax method until it support this response type
-							xhr.onload = function( e ) {
-								if (this.status == 200){
+							xhr.onload = function( e ){
+								if (this.status == 200 && e.totalSize > 0 ){
 									localStorage[key] = 'data:image/' + imgType + ';base64,' + base64EncodeResponse( this.response );
 									$this.prop('src', localStorage[key] );
-									if( $this.data('cacheImagesRemove') === 'true' ){
+									if( $this.is('.cacheImagesRemove') ){
 										$this.remove();
 									}
 								}else{
 									localStorage[key] = 'error';
+									// Display the default image
+									if( typeof window.cacheImagesConfig.defaultSrc !== 'undefined' ){
+										var defaultKey = window.cacheImagesConfig.storagePrefix + ':' + window.cacheImagesConfig.defaultSrc;
+										if( typeof localStorage[defaultKey] !== 'undefined' ){
+											$this.prop('src', localStorage[defaultKey] );
+										}else{
+											$this.cacheImages({url: window.cacheImagesConfig.defaultSrc });	// Will cache it, and display it here
+										}
+									}else{
+										$this.prop('src', window.cacheImagesConfig.defaultImage );
+									}
 								}
 							};
 							xhr.send();
@@ -191,7 +211,7 @@
 	 *	Manually cache an image into the local storage
 	 */
 	window.cacheImageFetchURL = function( url ){
-		$('body').append($('<img style="display: none;" />').prop('src', url ).data('cacheImagesRemove', 'true').cacheImages());
+		$('body').append( $('<img style="display: none;" />').addClass('cacheImagesRemove').cacheImages({url: url}) );
 	};
 	/*
 	 *	Will remove all of the cached images from their localStorage

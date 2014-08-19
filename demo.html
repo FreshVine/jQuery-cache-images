@@ -23,12 +23,13 @@
 	</p>
 	<div id="statWindow" style="text-align: center; border: 5px solid; min-height: 40px;"></div>
 
-	<p>Images are kept in browser's Local Storage as a base64 encoded string. </p>
+	<p>Images are kept in browser's Local Storage as a base64 encoded string. Below are three images and an image that links to a non-existant file so it shows the default.</p>
 
 	<div id="DemoImages">
 		<img src="assets/x-all-the-things.png" />
 		<img src="assets/cat.gif" />
 		<img src="assets/warhol.jpg" />
+		<img src="assets/broken-image-path.jpg" />
 	</div>
 
 
@@ -46,6 +47,7 @@
 
 	<script type="text/javascript">
 		$('#DemoImages img').cacheImages();
+		// $('#DemoImages img').cacheImages({defaultImage: 'http://upload.wikimedia.org/wikipedia/commons/f/f8/Monocle_with_gallery.jpg'});
 		$(function(){
 			// $('#flickrTest').cacheImages({debug: true});
 			$(document).on('click','#dropCache', function(){ cacheImagesDrop();	});
