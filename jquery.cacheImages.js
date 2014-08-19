@@ -214,6 +214,27 @@
 		$('body').append( $('<img style="display: none;" />').addClass('cacheImagesRemove').cacheImages({url: url}) );
 	};
 	/*
+	 *	Manually cache an image into the local storage
+	 */
+	window.cacheImagesOutput = function( url ){
+		var tempKey = window.cacheImagesConfig.storagePrefix + ':' + url;
+		if( window.localStorage.getItem( tempKey ) != null ){
+			return window.localStorage.getItem( tempKey );	// Image exists in the cache
+		}else{
+			
+			if( /^data:image/.test( window.cacheImagesConfig.defaultImage ) === true ){
+				return window.cacheImagesConfig.defaultImage;	// this is an encoded string
+			}
+
+			tempKey = window.cacheImagesConfig.storagePrefix + ':' + window.cacheImagesConfig.defaultImage;
+			if( window.localStorage.getItem( tempKey ) != null ){
+				return window.localStorage.getItem( tempKey );	// Default URL was already cached
+			}
+		}
+
+		return null;	// Neither the image or the cached version existsed
+	};
+	/*
 	 *	Will remove all of the cached images from their localStorage
 	 */
 	window.cacheImagesDrop = function(){
