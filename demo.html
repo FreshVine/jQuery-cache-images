@@ -1,0 +1,57 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+  <head>
+    <title>jQuery Cache Images v1.0 Plug-in Demo</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
+	<script type="text/javascript" src="assets/jquery-1.9.1.js"></script>
+	<script type="text/javascript" src="jquery.cacheImages.js"></script>
+	
+  </head>
+  <body>
+    
+	<h1>jQuery Cache Images v1.0 Plug-in</h1>
+
+	<p>Use the following buttons to perform some basic checks on the cache</p>
+	<p>
+		<button id="cacheLoadAdd">Display all cached images</button>
+		<button id="cacheStats">Cache Stats</button>
+		<button id="dropCache">Empty the Cache</button>
+	</p>
+	<div id="statWindow" style="text-align: center;"></div>
+
+	<p>Images are kept in browser's Local Storage as a base64 encoded string. </p>
+
+	<ul id="DemoImages">
+	  <li><img src="assets/x-all-the-things.png" /></li>
+	  <li><img src="assets/cat.gif" /></li>
+	  <li><img src="assets/warhol.jpg" /></li>
+	</ul>
+
+
+	<h2>Flickr Test</h2>
+	<div>
+		Here is a dynamic example where we will fetch a bunch of images from Flickr, dynamically insert them into the page, and they all get cached.
+		<pre></pre>
+		<br />
+		<button id="FlickrTest">Load Some Flickr Images</button>
+	</div>
+
+
+	<div id="flickrTest">
+		
+	</div>
+
+	<script type="text/javascript">
+		$('#DemoImages img').cacheImages();
+		$(function(){
+			// $('#flickrTest').cacheImages({debug: true});
+			$(document).on('click','#dropCache', function(){ cacheImagesDrop();	});
+		});
+
+		var cacheImagesShowAll = function( container ){
+			
+		}
+	</script>
+  </body>
+</html>
