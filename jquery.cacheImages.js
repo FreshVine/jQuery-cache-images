@@ -19,7 +19,7 @@
 (function ($) {
 	$.fn.cacheImages = function (opts) {
 		// Set the defaults
-		window.cacheImagesConfig = $.extend({}, {
+		this.cacheImagesConfig = $.extend({}, {
 			debug: false,	// Boolean value to enable or disable some of the console messaging for trouble shooting
 			defaultImage: 'data:image/png;base64,/9j/4AAQSkZJRgABAgAAZABkAAD/7AARRHVja3kAAQAEAAAAHgAA/+4ADkFkb2JlAGTAAAAAAf/bAIQAEAsLCwwLEAwMEBcPDQ8XGxQQEBQbHxcXFxcXHx4XGhoaGhceHiMlJyUjHi8vMzMvL0BAQEBAQEBAQEBAQEBAQAERDw8RExEVEhIVFBEUERQaFBYWFBomGhocGhomMCMeHh4eIzArLicnJy4rNTUwMDU1QEA/QEBAQEBAQEBAQEBA/8AAEQgAZABkAwEiAAIRAQMRAf/EAEsAAQEAAAAAAAAAAAAAAAAAAAAFAQEAAAAAAAAAAAAAAAAAAAAAEAEAAAAAAAAAAAAAAAAAAAAAEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwCwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD//2Q==',	// URL or base64 string for the default image (will obviously get cached) - default is at assets/default.jpg
 			encodeOnCanvas: false,	// This is still experimental and should be disabled in production
@@ -28,7 +28,7 @@
 			}, opts);
 
 		// Check for canvas support
-		window.cacheImagesConfig.encodeOnCanvas = typeof HTMLCanvasElement != undefined ? window.cacheImagesConfig.encodeOnCanvas : false;
+		this.cacheImagesConfig.encodeOnCanvas = typeof HTMLCanvasElement != undefined ? this.cacheImagesConfig.encodeOnCanvas : false;
 
 		var self = this;
 
@@ -36,8 +36,8 @@
 		/*
 		 * Ensure we have the default image cached and ready for use
 		 */
-		if( /^data:image/.test( window.cacheImagesConfig.defaultImage ) === false ){
-			window.cacheImagesConfig.defaultSrc = window.cacheImagesConfig.defaultImage;
+		if( /^data:image/.test( this.cacheImagesConfig.defaultImage ) === false ){
+			this.cacheImagesConfig.defaultSrc = this.cacheImagesConfig.defaultImage;
 		}
 
 
@@ -126,16 +126,16 @@
 			$(self).each(function (i, img) {
 				var $this = $(img),
 					src = $this.prop('src') || $this.data('cachedImageSrc');
-				if( window.cacheImagesConfig.url !== null ){	// URL set in the opts
-					src = window.cacheImagesConfig.url;
+				if( self.cacheImagesConfig.url !== null ){	// URL set in the opts
+					src = self.cacheImagesConfig.url;
 					$this.prop('src', '');
 				}
 
-				var	key = window.cacheImagesConfig.storagePrefix + ':' + src,	// Prepare the localStorage key
+				var	key = self.cacheImagesConfig.storagePrefix + ':' + src,	// Prepare the localStorage key
 					localSrcEncoded = localStorage[key];
 
 				if( typeof localStorage !== "object" ){	// See if local storage is working
-					if( window.cacheImagesConfig.debug ){ console.log("localStorage is not available"); }
+					if( self.cacheImagesConfig.debug ){ console.log("localStorage is not available"); }
 					return false;	// Unable to cache, so stop looping
 				}
 
@@ -162,7 +162,7 @@
 						localStorage[key] = 'pending';
 						$this.data('cachedImageSrc', src);
 
-						if( window.cacheImagesConfig.encodeOnCanvas && imgType !== 'gif' ){
+						if( self.cacheImagesConfig.encodeOnCanvas && imgType !== 'gif' ){
 							$this.load(function () {
 								localStorage[key] = src = base64EncodeCanvas( img );
 								if( src.substring(0,5) === 'data:' ){
@@ -186,15 +186,15 @@
 								}else{
 									localStorage[key] = 'error';
 									// Display the default image
-									if( typeof window.cacheImagesConfig.defaultSrc !== 'undefined' ){
-										var defaultKey = window.cacheImagesConfig.storagePrefix + ':' + window.cacheImagesConfig.defaultSrc;
+									if( typeof self.cacheImagesConfig.defaultSrc !== 'undefined' ){
+										var defaultKey = self.cacheImagesConfig.storagePrefix + ':' + self.cacheImagesConfig.defaultSrc;
 										if( typeof localStorage[defaultKey] !== 'undefined' ){
 											$this.prop('src', localStorage[defaultKey] );
 										}else{
-											$this.cacheImages({url: window.cacheImagesConfig.defaultSrc });	// Will cache it, and display it here
+											$this.cacheImages({url: self.cacheImagesConfig.defaultSrc });	// Will cache it, and display it here
 										}
 									}else{
-										$this.prop('src', window.cacheImagesConfig.defaultImage );
+										$this.prop('src', self.cacheImagesConfig.defaultImage );
 									}
 								}
 							};
@@ -216,17 +216,18 @@
 	/*
 	 *	Manually cache an image into the local storage
 	 */
-	window.cacheImagesOutput = function( url ){
-		var tempKey = window.cacheImagesConfig.storagePrefix + ':' + url;
+	window.cacheImagesOutput = function( url, storagePrefix ){
+		if( typeof storagePrefix === 'undefined' ){ storagePrefix = 'cached'; }
+		var tempKey = storagePrefix + ':' + url;
 		if( window.localStorage.getItem( tempKey ) != null ){
 			return window.localStorage.getItem( tempKey );	// Image exists in the cache
 		}else{
-			
-			if( /^data:image/.test( window.cacheImagesConfig.defaultImage ) === true ){
-				return window.cacheImagesConfig.defaultImage;	// this is an encoded string
+
+			if( /^data:image/.test( this.cacheImagesConfig.defaultImage ) === true ){
+				return this.cacheImagesConfig.defaultImage;	// this is an encoded string
 			}
 
-			tempKey = window.cacheImagesConfig.storagePrefix + ':' + window.cacheImagesConfig.defaultImage;
+			tempKey = storagePrefix + ':' + this.cacheImagesConfig.defaultImage;
 			if( window.localStorage.getItem( tempKey ) != null ){
 				return window.localStorage.getItem( tempKey );	// Default URL was already cached
 			}
@@ -237,27 +238,30 @@
 	/*
 	 *	Will remove all of the cached images from their localStorage
 	 */
-	window.cacheImagesDrop = function(){
-		var dropKeys = [];	// Store the keys we need to drop here
+	window.cacheImagesDrop = function( storagePrefix ){
+		var dropKeys = [],	// Store the keys we need to drop here
+			debug = false;
+		if( typeof storagePrefix === 'undefined' ){ storagePrefix = 'cached'; }
+
 		// Lets get our loop on
 		for (i = 0; i < window.localStorage.length; i++) {
-			if( window.localStorage.key(i).substr( 0, window.cacheImagesConfig.storagePrefix.length + 1 ) !== window.cacheImagesConfig.storagePrefix + ':' ){ continue; }	// Does not match our prefix?
+			if( window.localStorage.key(i).substr( 0,storagePrefix.length + 1 ) !== storagePrefix + ':' ){ continue; }	// Does not match our prefix?
 
 			dropKeys.push( window.localStorage.key(i) ); // Droping the keys here re-indexes the localStorage so that the offset in our loop is wrong
 		}
 
 		if( dropKeys.length ===  0 ){
-			if( window.cacheImagesConfig.debug ){ console.log( 'No Images to Drop' ); }
+			if( debug ){ console.log( 'No Images to Drop' ); }
 			return true;
 		}
 
 		// Drop the keys we found
 		for( i = 0; i < dropKeys.length; i++ ){
-			if( window.cacheImagesConfig.debug ){ console.log( 'Dropping localStorage Key:', dropKeys[i] ); }	// Let them know what keys were dropped
+			if( debug ){ console.log( 'Dropping localStorage Key:', dropKeys[i] ); }	// Let them know what keys were dropped
 			window.localStorage.removeItem( dropKeys[i] );
 		}
 
-		if( window.cacheImagesConfig.debug ){ console.log( 'Dropped ' + dropKeys.length + ' images from localStorage' ); }	// Provide a bit of feedback for developers
+		if( debug ){ console.log( 'Dropped ' + dropKeys.length + ' images from localStorage' ); }	// Provide a bit of feedback for developers
 		return true;
 	};
 })(jQuery);

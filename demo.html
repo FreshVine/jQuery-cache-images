@@ -77,18 +77,20 @@
 		 *	Grab all of the images and display them inside the container
 		 */
 
-		var cacheKeys = [];	// Store the keys we need to drop here
-		var cacheImagesShowAll = function( container ){
+		var cacheKeys = [],	// Store the keys we need to drop here
+			debug = true;
+		var cacheImagesShowAll = function( container, storagePrefix ){
+			if( typeof storagePrefix === 'undefined' ){ storagePrefix = 'cached'; }
 			var cacheKeys = [];	// Store the keys we need to drop here
 			// Lets get our loop on
 			for (i = 0; i < window.localStorage.length; i++) {
-				if( window.localStorage.key(i).substr( 0, window.cacheImagesConfig.storagePrefix.length + 1 ) !== window.cacheImagesConfig.storagePrefix + ':' ){ continue; }	// Does not match our prefix?
+				if( window.localStorage.key(i).substr( 0, storagePrefix.length + 1 ) !== storagePrefix + ':' ){ continue; }	// Does not match our prefix?
 
 				cacheKeys.push( window.localStorage.key(i) ); // Droping the keys here re-indexes the localStorage so that the offset in our loop is wrong
 			}
 
 			if( cacheKeys.length ===  0 ){
-				if( window.cacheImagesConfig.debug ){ console.log( 'No Images to Drop' ); }
+				if( window.debug ){ console.log( 'No Images to Drop' ); }
 				return true;
 			}
 
