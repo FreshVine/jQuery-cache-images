@@ -22,11 +22,13 @@
 		window.cacheImagesConfig = $.extend({}, {
 			debug: true,	// Boolean value to enable or disable some of the console messaging for trouble shooting
 			defaultImage: 'data:image/png;base64,/9j/4AAQSkZJRgABAgAAZABkAAD/7AARRHVja3kAAQAEAAAAHgAA/+4ADkFkb2JlAGTAAAAAAf/bAIQAEAsLCwwLEAwMEBcPDQ8XGxQQEBQbHxcXFxcXHx4XGhoaGhceHiMlJyUjHi8vMzMvL0BAQEBAQEBAQEBAQEBAQAERDw8RExEVEhIVFBEUERQaFBYWFBomGhocGhomMCMeHh4eIzArLicnJy4rNTUwMDU1QEA/QEBAQEBAQEBAQEBA/8AAEQgAZABkAwEiAAIRAQMRAf/EAEsAAQEAAAAAAAAAAAAAAAAAAAAFAQEAAAAAAAAAAAAAAAAAAAAAEAEAAAAAAAAAAAAAAAAAAAAAEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwCwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD//2Q==',	// URL or base64 string for the default image (will obviously get cached) - default is at assets/default.jpg
-			storagePrefix: 'cached'	// Used to prefix the URL in at localStorage key
+			encodeOnCanvas: false,	// This is still experimental and should be disabled in production
+			storagePrefix: 'cached',	// Used to prefix the URL in at localStorage key
+			url: null	// Allows you to directly set the url for an element
 			}, opts);
 
 		// Check for canvas support
-		window.cacheImagesConfig.canvasEncoder = typeof HTMLCanvasElement != undefined ? window.cacheImagesConfig.canvasEncoder : false;
+		window.cacheImagesConfig.encodeOnCanvas = typeof HTMLCanvasElement != undefined ? window.cacheImagesConfig.encodeOnCanvas : false;
 
 		var self = this;
 
@@ -36,21 +38,21 @@
 		 *	filename | string | this is the url accessed/filename, it's needed so that we can parse out the type of image for mimetyping
 		 *	Code base heavily on Encoding XHR image data by @mathias - http://jsperf.com/encoding-xhr-image-data/33
 		 */
-		var getBase64Image = function( img ){
+		var base64EncodeCanvas = function( img ){
 			try {
-				var canvas = document.createElement('canvas'),
-					imgType = img.src.match(/\.(jpg|jpeg|png)$/i);
+				var canvas = document.createElement('canvas');
 				canvas.width = img.width;
 				canvas.height = img.height;
 
-				if (imgType && imgType.length) {
+				var ctx = canvas.getContext('2d');
+				ctx.drawImage(img, 0, 0);
+
+				var imgType = img.src.match(/\.(jpg|jpeg|png)$/i);
+				if( imgType && imgType.length ) {
 					imgType = imgType[1].toLowerCase() == 'jpg' ? 'jpeg' : imgType[1].toLowerCase();
 				} else {
 					throw 'Invalid image type for canvas encoder: ' + img.src;
 				}
-
-				var ctx = canvas.getContext('2d');
-				ctx.drawImage(img, 0, 0);
 
 				return canvas.toDataURL('image/' + imgType);
 			} catch (e) {
@@ -107,46 +109,58 @@
 		   return base64;
 	    };
 
-		$(document).ready(function () {
+		/*
+		 * Here is the magic, this is the function that processes through the caching of the images
+		 */ 
+		$(function () {
 			// console.log( $(self) );
 			$(self).each(function (i, img) {
 				var $this = $(img),
-					src = $this.prop('src') || $this.data('cachedImageSrc'),
-					key = window.cacheImagesConfig.storagePrefix + ':' + src,	// Prepare the localStorage key
+					src = $this.prop('src') || $this.data('cachedImageSrc');
+				if( window.cacheImagesConfig.url !== null ){	// URL set in the opts
+					src = window.cacheImagesConfig.url;
+					$this.prop('src', '');
+				}
+
+				var	key = window.cacheImagesConfig.storagePrefix + ':' + src,	// Prepare the localStorage key
 					localSrcEncoded = localStorage[key];
 
 				if( typeof localStorage !== "object" ){	// See if local storage is working
 					if( window.cacheImagesConfig.debug ){ console.log("localStorage is not available"); }
-					return false;
+					return false;	// Unable to cache, so stop looping
 				}
 
-				if( typeof src === 'undefined' ){ return false; }
+				if( typeof src === 'undefined' ){ return true; }	// Move to the next item
+				if( typeof $this.prop('src') !== 'undefined' && $this.prop('src').substring(0,5) === 'data:' ){ return true; }	// This has already been converted
 
-				// Check if we need to
+				
 
-				window.cacheImagesConfig.canvasEncoder = typeof HTMLCanvasElement != undefined ? true : false;
-
-				if( src.substring(0,5) === 'data:' ){ return true; }	// This has already been converted
 				if( localSrcEncoded && /^data:image/.test( localSrcEncoded ) ) {
 					// Check if the image has already been cached, if it has lets bounce out of here
+					$this.data('cachedImageSrc', src);
 					$this.prop('src', localSrcEncoded);
 				}else{
 					// The image has not yet been cached, so we need to get on that.
 					$this.prop('src', src);
 					var imgType = src.match(/\.(jpg|jpeg|png|gif)$/i);	// Break out the filename to get the type
-					if (imgType && imgType.length){	// Get us the type of file
+					if( imgType && imgType.length){	// Get us the type of file
 						imgType = imgType[1].toLowerCase() == 'jpg' ? 'jpeg' : imgType[1].toLowerCase();
 					}
+					if( typeof imgType === 'undefined' ){ return true; }
+
 
 					if( localStorage[key] !== 'pending' ){
 						localStorage[key] = 'pending';
+						$this.data('cachedImageSrc', src);
 
-						window.cacheImagesConfig.canvasEncoder = typeof HTMLCanvasElement != undefined ? true : false;
-						if( window.cacheImagesConfig.canvasEncoder && imgType !== 'gif' ){
+						if( window.cacheImagesConfig.encodeOnCanvas && imgType !== 'gif' ){
 							$this.load(function () {
-								localStorage[key] = getBase64Image(img);
+								localStorage[key] = src = base64EncodeCanvas( img );
 								if( src.substring(0,5) === 'data:' ){
 									$this.prop('src', localStorage[key] );
+									if( $this.data('cacheImagesRemove') === 'true' ){
+										$this.remove();
+									}
 								}
 							});
 						}else{
@@ -156,60 +170,29 @@
 							xhr.onload = function( e ) {
 								if (this.status == 200){
 									localStorage[key] = 'data:image/' + imgType + ';base64,' + base64EncodeResponse( this.response );
+									$this.prop('src', localStorage[key] );
+									if( $this.data('cacheImagesRemove') === 'true' ){
+										$this.remove();
+									}
 								}else{
 									localStorage[key] = 'error';
 								}
 							};
 							xhr.send();
-						}	
+						}
 					}
 				}
 			});
 		});
-		
+
 		return this;
 	};
-	/*
-	 *	Will place the cached image into the element.
-	 */
-	window.cacheImagesDisplay = function( elem, src ){
-		console.log(elem);
-		console.log(src);
-		if( typeof elem !== "object" && typeof elem.context.tagName !== 'undefined'){	// Ensure that the element a valid DOM element
-			if( window.cacheImagesConfig.debug ){ console.log('The elem variable passed was not valid'); }
-			return false;
-		}
-		if( typeof localStorage !== "object" ){
-			if( window.cacheImagesConfig.debug ){console.log("localStorage is not available"); }
-			return false;
-		}
-
-		if( typeof src === 'undefined' ){
-			if( typeof elem.prop('src') === 'string' ){
-				src = elem.prop('src');	// use the elements SRC as the source
-			}else{
-				if( window.cacheImagesConfig.debug ){ console.log('No source to fetch'); }
-				return false;
-			}
-		}
-
-		// Check if it has already been cached
-		var key = window.cacheImagesConfig.storagePrefix + ':' + src;
-		if( src.substring(0,5) === 'data:' ){ return elem; }	// This has already been converted
-
-		//
-		// Lets cache it up
-		var resposne = cacheImagesFetchURL( src );
-
-
-		return elem;
-	},
 	/*
 	 *	Manually cache an image into the local storage
 	 */
 	window.cacheImageFetchURL = function( url ){
-		$('body').append($('<img style="display: none;" />').prop('src', url ).cacheImages() );
-	},
+		$('body').append($('<img style="display: none;" />').prop('src', url ).data('cacheImagesRemove', 'true').cacheImages());
+	};
 	/*
 	 *	Will remove all of the cached images from their localStorage
 	 */
