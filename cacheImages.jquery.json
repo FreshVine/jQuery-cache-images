@@ -1,0 +1,35 @@
+{
+    "name": "cacheImages",
+    "version": "1.0.0",
+    "title": "jQuery.cacheImages()",
+    "author": {
+        "name": "Fresh Vine",
+        "url": "https://github.com/FreshVine"
+    },
+    "licenses": [
+        {
+            "type": "MIT",
+            "url": "http://www.opensource.org/licenses/mit-license.php"
+        },
+        {
+            "type": "GPL",
+            "url": "http://www.opensource.org/licenses/gpl-license.php"
+        }
+    ],
+    "dependencies": {
+        "jquery": ">=1.7"
+    },
+    "description": "Makes for easy caching of image files in the browsers LocalStorage. Can be bound elements or parents.",
+    "keywords": [
+        "image",
+        "cache",
+        "localStorage",
+        "local",
+		"storage",
+		"offline"
+    ],
+    "homepage": "http://freshvine.github.io/jQuery-cache-images/",
+    "docs": "https://github.com/FreshVine/jQuery-cache-images",
+	"demo": "http://freshvine.github.io/jQuery-cache-images/demo.html",
+	"bugs": "https://github.com/FreshVine/jQuery-cache-images/issues"
+}
