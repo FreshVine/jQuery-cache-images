@@ -14,6 +14,7 @@
   <body>
     
 	<h1>jQuery Cache Images v1.0 Plug-in</h1>
+	<a href="index.html">Back to Index</a>
 
 	<p>Use the following buttons to perform some basic checks on the cache</p>
 	<p>
@@ -21,7 +22,7 @@
 		<button onclick="$('#statWindow').html('');">Empty Display</button>
 		<button id="dropCache">Empty the Cache</button>
 	</p>
-	<div id="statWindow" style="text-align: center; border: 5px solid; min-height: 40px;"></div>
+	<div id="statWindow" style="text-align: center; border: 5px solid; min-height: 40px; margin: 15px;"></div>
 
 	<p>Images are kept in browser's Local Storage as a base64 encoded string. Below are three images and an image that links to a non-existant file so it shows the default.</p>
 
@@ -35,13 +36,17 @@
 
 	<h2>Flickr Test</h2>
 	<div>
-		Here is a dynamic example where we will fetch a bunch of images from Flickr, dynamically insert them into the page, and they all get cached.
-		<br />
+		Here is a dynamic example where we will fetch a bunch of images from Flickr, dynamically insert them into the page, and they all get cached. Some of the images are restricted by a same origin policy which will generate errors in your console. But this is a configuration issue with Flickr - not the caching. Presumably you'll have control of your content and can ensure it is accessible.
+	</div>
+	<div style="text-align: center; margin-top: 2em;">
+		<label for="FlickrTags">Search Tags</label>
+		<input type="text" id="FlickrTags" value="goat,pasture" />
 		<button id="FlickrTest">Load Some Flickr Images</button>
+		<button onclick="$('#flickrTest').html('');">Empty Display</button>
 	</div>
 
 
-	<div id="flickrTest">
+	<div id="flickrTest" style="text-align: center; border: 5px solid; min-height: 40px; margin: 15px;">
 		
 	</div>
 
@@ -53,11 +58,14 @@
 			$(document).on('click','#dropCache', function(){ cacheImagesDrop();	});
 			$(document).on('click','#cacheLoadAll', function(){	cacheImagesShowAll( $('#statWindow') ); });
 			$(document).on('click','#FlickrTest', function(){
+				if( $('#FlickrTags').val() === ''){
+					$('#FlickrTags').val('goat,pasture');
+				}
 				var jxhr = $.ajax( 'http://api.flickr.com/services/feeds/photos_public.gne?tags=paris,church&lang=en-us&format=json',
 							{ type: 'get',
 								dataType: 'jsonp',
 								jsonpCallback: 'jsonFlickrFeed',
-								data: {'tags': 'goat,pasture',
+								data: {'tags': $('#FlickrTags').val(),
 								 		'lang': 'en-us',
 										'format': 'json'},
 							})
