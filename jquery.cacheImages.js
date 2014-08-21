@@ -98,6 +98,8 @@
 								if( $this.is('.cacheImagesRemove') ){
 									$this.remove();
 								}
+								self.cacheImagesConfig.done.call( $this, false );
+								self.cacheImagesConfig.always.call( $this );
 							}else{
 								localStorage[key] = 'error';
 								// Display the default image
@@ -105,11 +107,17 @@
 									var defaultKey = self.cacheImagesConfig.storagePrefix + ':' + self.cacheImagesConfig.defaultSrc;
 									if( typeof localStorage[defaultKey] !== 'undefined' ){
 										$this.prop('src', localStorage[defaultKey] );
+										self.cacheImagesConfig.done.call( $this );
+										self.cacheImagesConfig.always.call( $this );
 									}else{
 										$this.cacheImages({url: self.cacheImagesConfig.defaultSrc });	// Will cache it, and display it here
+									    self.cacheImagesConfig.done.call( $this );
+										self.cacheImagesConfig.always.call( $this );
 									}
 								}else{
 									$this.prop('src', self.cacheImagesConfig.defaultImage );
+									self.cacheImagesConfig.fail.call( $this );
+									self.cacheImagesConfig.always.call( $this );
 								}
 							}
 						};
@@ -123,9 +131,12 @@
 	};
 	// Plugin defaults – added as a property on our plugin function.
 	$.fn.cacheImages.defaults = {
+		always: function(){},	// Will always be called at the end of the caching attempt
 		debug: false,	// Boolean value to enable or disable some of the console messaging for trouble shooting
 		defaultImage: 'data:image/png;base64,/9j/4AAQSkZJRgABAgAAZABkAAD/7AARRHVja3kAAQAEAAAAHgAA/+4ADkFkb2JlAGTAAAAAAf/bAIQAEAsLCwwLEAwMEBcPDQ8XGxQQEBQbHxcXFxcXHx4XGhoaGhceHiMlJyUjHi8vMzMvL0BAQEBAQEBAQEBAQEBAQAERDw8RExEVEhIVFBEUERQaFBYWFBomGhocGhomMCMeHh4eIzArLicnJy4rNTUwMDU1QEA/QEBAQEBAQEBAQEBA/8AAEQgAZABkAwEiAAIRAQMRAf/EAEsAAQEAAAAAAAAAAAAAAAAAAAAFAQEAAAAAAAAAAAAAAAAAAAAAEAEAAAAAAAAAAAAAAAAAAAAAEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwCwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD//2Q==',	// URL or base64 string for the default image (will obviously get cached) - default is at assets/default.jpg
+		done: function(){},	// Call back after the image has been cached
 		encodeOnCanvas: false,	// This is still experimental and should be disabled in production
+		fail: function(){},	// Call back after unable to cache an image
 		storagePrefix: 'cached',	// Used to prefix the URL in at localStorage key
 		url: null	// Allows you to directly set the url for an element
 	};
@@ -211,9 +222,9 @@
 		$('body').append( $('<img style="display: none;" />').addClass('cacheImagesRemove').cacheImages({url: url}) );
 	};
 	/*
-	 *	Manually cache an image into the local storage
+	 *	Retreive the encoded string from local storage
 	 */
-	window.cacheImagesOutput = function( url, storagePrefix ){
+	$.fn.cacheImages.Output = function( url, storagePrefix ){
 		if( typeof storagePrefix === 'undefined' ){ storagePrefix = $.fn.cacheImages.defaults.storagePrefix; }
 		var tempKey = storagePrefix + ':' + url;
 		if( window.localStorage.getItem( tempKey ) != null ){
