@@ -6,7 +6,7 @@
  *
  * @author Paul Prins
  * @link http://paulprins.net
- * @version 1.0
+ * @version 1.2.0
  * @requires jQuery v1.7 or later
  *
  * Official jQuery plugin page: 
@@ -92,12 +92,16 @@
 						xhr.open('GET', src, true);
 						xhr.responseType = 'arraybuffer'; // Cannot use the jQuery ajax method until it support this response type
 						xhr.onload = function( e ){
-							if (this.status == 200 && e.totalSize > 0 ){
+							if (this.status == 200 ){
 								localStorage[key] = 'data:image/' + imgType + ';base64,' + $.fn.cacheImages.base64EncodeResponse( this.response );
+							}
+
+							if( localStorage[key] !== 'data:image/' + imgType + ';base64,'){
 								$this.prop('src', localStorage[key] );
 								if( $this.is('.cacheImagesRemove') ){
 									$this.remove();
 								}
+
 								self.cacheImagesConfig.done.call( $this, false );
 								self.cacheImagesConfig.always.call( $this );
 							}else{
