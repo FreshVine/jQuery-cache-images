@@ -17,15 +17,9 @@
  *   http://www.gnu.org/licenses/gpl.html
  */
 (function ($) {
-	$.fn.cacheImages = function (opts) {
+	$.fn.cacheImages = function( options ) {
 		// Set the defaults
-		this.cacheImagesConfig = $.extend({}, {
-			debug: false,	// Boolean value to enable or disable some of the console messaging for trouble shooting
-			defaultImage: 'data:image/png;base64,/9j/4AAQSkZJRgABAgAAZABkAAD/7AARRHVja3kAAQAEAAAAHgAA/+4ADkFkb2JlAGTAAAAAAf/bAIQAEAsLCwwLEAwMEBcPDQ8XGxQQEBQbHxcXFxcXHx4XGhoaGhceHiMlJyUjHi8vMzMvL0BAQEBAQEBAQEBAQEBAQAERDw8RExEVEhIVFBEUERQaFBYWFBomGhocGhomMCMeHh4eIzArLicnJy4rNTUwMDU1QEA/QEBAQEBAQEBAQEBA/8AAEQgAZABkAwEiAAIRAQMRAf/EAEsAAQEAAAAAAAAAAAAAAAAAAAAFAQEAAAAAAAAAAAAAAAAAAAAAEAEAAAAAAAAAAAAAAAAAAAAAEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwCwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD//2Q==',	// URL or base64 string for the default image (will obviously get cached) - default is at assets/default.jpg
-			encodeOnCanvas: false,	// This is still experimental and should be disabled in production
-			storagePrefix: 'cached',	// Used to prefix the URL in at localStorage key
-			url: null	// Allows you to directly set the url for an element
-			}, opts);
+		this.cacheImagesConfig = $.extend( {}, $.fn.cacheImages.defaults, options );
 
 		// Check for canvas support
 		this.cacheImagesConfig.encodeOnCanvas = typeof HTMLCanvasElement != undefined ? this.cacheImagesConfig.encodeOnCanvas : false;
@@ -121,91 +115,98 @@
 		/*
 		 * Here is the magic, this is the function that processes through the caching of the images
 		 */ 
-		$(function () {
-			// console.log( $(self) );
-			$(self).each(function (i, img) {
-				var $this = $(img),
-					src = $this.prop('src') || $this.data('cachedImageSrc');
-				if( self.cacheImagesConfig.url !== null ){	// URL set in the opts
-					src = self.cacheImagesConfig.url;
-					$this.prop('src', '');
+
+		// console.log( $(self) );
+		return this.each(function (i, img) {
+			var $this = $(img),
+				src = $this.prop('src') || $this.data('cachedImageSrc');
+			if( self.cacheImagesConfig.url !== null ){	// URL set in the opts
+				src = self.cacheImagesConfig.url;
+				$this.prop('src', '');
+			}
+
+			var	key = self.cacheImagesConfig.storagePrefix + ':' + src,	// Prepare the localStorage key
+				localSrcEncoded = localStorage[key];
+
+			if( typeof localStorage !== "object" ){	// See if local storage is working
+				if( self.cacheImagesConfig.debug ){ console.log("localStorage is not available"); }
+				return false;	// Unable to cache, so stop looping
+			}
+
+			if( typeof src === 'undefined' ){ return true; }	// Move to the next item
+			if( typeof $this.prop('src') !== 'undefined' && $this.prop('src').substring(0,5) === 'data:' ){ return true; }	// This has already been converted
+
+			
+
+			if( localSrcEncoded && /^data:image/.test( localSrcEncoded ) ) {
+				// Check if the image has already been cached, if it has lets bounce out of here
+				$this.data('cachedImageSrc', src);
+				$this.prop('src', localSrcEncoded);
+			}else{
+				// The image has not yet been cached, so we need to get on that.
+				$this.prop('src', '');	// This will cancel the request if it hasn't already been finished
+				var imgType = src.match(/\.(jpg|jpeg|png|gif)$/i);	// Break out the filename to get the type
+				if( imgType && imgType.length){	// Get us the type of file
+					imgType = imgType[1].toLowerCase() == 'jpg' ? 'jpeg' : imgType[1].toLowerCase();
 				}
+				if( typeof imgType === 'undefined' ){ return true; }
 
-				var	key = self.cacheImagesConfig.storagePrefix + ':' + src,	// Prepare the localStorage key
-					localSrcEncoded = localStorage[key];
 
-				if( typeof localStorage !== "object" ){	// See if local storage is working
-					if( self.cacheImagesConfig.debug ){ console.log("localStorage is not available"); }
-					return false;	// Unable to cache, so stop looping
-				}
-
-				if( typeof src === 'undefined' ){ return true; }	// Move to the next item
-				if( typeof $this.prop('src') !== 'undefined' && $this.prop('src').substring(0,5) === 'data:' ){ return true; }	// This has already been converted
-
-				
-
-				if( localSrcEncoded && /^data:image/.test( localSrcEncoded ) ) {
-					// Check if the image has already been cached, if it has lets bounce out of here
+				if( localStorage[key] !== 'pending' ){
+					localStorage[key] = 'pending';
 					$this.data('cachedImageSrc', src);
-					$this.prop('src', localSrcEncoded);
-				}else{
-					// The image has not yet been cached, so we need to get on that.
-					$this.prop('src', '');	// This will cancel the request if it hasn't already been finished
-					var imgType = src.match(/\.(jpg|jpeg|png|gif)$/i);	// Break out the filename to get the type
-					if( imgType && imgType.length){	// Get us the type of file
-						imgType = imgType[1].toLowerCase() == 'jpg' ? 'jpeg' : imgType[1].toLowerCase();
-					}
-					if( typeof imgType === 'undefined' ){ return true; }
 
-
-					if( localStorage[key] !== 'pending' ){
-						localStorage[key] = 'pending';
-						$this.data('cachedImageSrc', src);
-
-						if( self.cacheImagesConfig.encodeOnCanvas && imgType !== 'gif' ){
-							$this.load(function () {
-								localStorage[key] = src = base64EncodeCanvas( img );
-								if( src.substring(0,5) === 'data:' ){
-									$this.prop('src', localStorage[key] );
-									if( $this.is('.cacheImagesRemove') ){
-										$this.remove();
-									}
+					if( self.cacheImagesConfig.encodeOnCanvas && imgType !== 'gif' ){
+						$this.load(function () {
+							localStorage[key] = src = base64EncodeCanvas( img );
+							if( src.substring(0,5) === 'data:' ){
+								$this.prop('src', localStorage[key] );
+								if( $this.is('.cacheImagesRemove') ){
+									$this.remove();
 								}
-							});
-						}else{
-							var xhr = new XMLHttpRequest();
-							xhr.open('GET', src, true);
-							xhr.responseType = 'arraybuffer'; // Cannot use the jQuery ajax method until it support this response type
-							xhr.onload = function( e ){
-								if (this.status == 200 && e.totalSize > 0 ){
-									localStorage[key] = 'data:image/' + imgType + ';base64,' + base64EncodeResponse( this.response );
-									$this.prop('src', localStorage[key] );
-									if( $this.is('.cacheImagesRemove') ){
-										$this.remove();
+							}
+						});
+					}else{
+						var xhr = new XMLHttpRequest();
+						xhr.open('GET', src, true);
+						xhr.responseType = 'arraybuffer'; // Cannot use the jQuery ajax method until it support this response type
+						xhr.onload = function( e ){
+							if (this.status == 200 && e.totalSize > 0 ){
+								localStorage[key] = 'data:image/' + imgType + ';base64,' + base64EncodeResponse( this.response );
+								$this.prop('src', localStorage[key] );
+								if( $this.is('.cacheImagesRemove') ){
+									$this.remove();
+								}
+							}else{
+								localStorage[key] = 'error';
+								// Display the default image
+								if( typeof self.cacheImagesConfig.defaultSrc !== 'undefined' ){
+									var defaultKey = self.cacheImagesConfig.storagePrefix + ':' + self.cacheImagesConfig.defaultSrc;
+									if( typeof localStorage[defaultKey] !== 'undefined' ){
+										$this.prop('src', localStorage[defaultKey] );
+									}else{
+										$this.cacheImages({url: self.cacheImagesConfig.defaultSrc });	// Will cache it, and display it here
 									}
 								}else{
-									localStorage[key] = 'error';
-									// Display the default image
-									if( typeof self.cacheImagesConfig.defaultSrc !== 'undefined' ){
-										var defaultKey = self.cacheImagesConfig.storagePrefix + ':' + self.cacheImagesConfig.defaultSrc;
-										if( typeof localStorage[defaultKey] !== 'undefined' ){
-											$this.prop('src', localStorage[defaultKey] );
-										}else{
-											$this.cacheImages({url: self.cacheImagesConfig.defaultSrc });	// Will cache it, and display it here
-										}
-									}else{
-										$this.prop('src', self.cacheImagesConfig.defaultImage );
-									}
+									$this.prop('src', self.cacheImagesConfig.defaultImage );
 								}
-							};
-							xhr.send();
-						}
+							}
+						};
+						xhr.send();
 					}
 				}
-			});
+			}
 		});
 
 		return this;
+	};
+	// Plugin defaults – added as a property on our plugin function.
+	$.fn.cacheImages.defaults = {
+		debug: false,	// Boolean value to enable or disable some of the console messaging for trouble shooting
+		defaultImage: 'data:image/png;base64,/9j/4AAQSkZJRgABAgAAZABkAAD/7AARRHVja3kAAQAEAAAAHgAA/+4ADkFkb2JlAGTAAAAAAf/bAIQAEAsLCwwLEAwMEBcPDQ8XGxQQEBQbHxcXFxcXHx4XGhoaGhceHiMlJyUjHi8vMzMvL0BAQEBAQEBAQEBAQEBAQAERDw8RExEVEhIVFBEUERQaFBYWFBomGhocGhomMCMeHh4eIzArLicnJy4rNTUwMDU1QEA/QEBAQEBAQEBAQEBA/8AAEQgAZABkAwEiAAIRAQMRAf/EAEsAAQEAAAAAAAAAAAAAAAAAAAAFAQEAAAAAAAAAAAAAAAAAAAAAEAEAAAAAAAAAAAAAAAAAAAAAEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwCwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD//2Q==',	// URL or base64 string for the default image (will obviously get cached) - default is at assets/default.jpg
+		encodeOnCanvas: false,	// This is still experimental and should be disabled in production
+		storagePrefix: 'cached',	// Used to prefix the URL in at localStorage key
+		url: null	// Allows you to directly set the url for an element
 	};
 	/*
 	 *	Manually cache an image into the local storage
