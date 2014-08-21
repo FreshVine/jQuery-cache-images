@@ -55,7 +55,7 @@
 		// $('#DemoImages img').cacheImages({defaultImage: 'http://upload.wikimedia.org/wikipedia/commons/f/f8/Monocle_with_gallery.jpg'});
 		$(function(){
 			// $('#flickrTest').cacheImages({debug: true});
-			$(document).on('click','#dropCache', function(){ cacheImagesDrop();	});
+			$(document).on('click','#dropCache', function(){ $.fn.cacheImages.drop();	});
 			$(document).on('click','#cacheLoadAll', function(){	cacheImagesShowAll( $('#statWindow') ); });
 			$(document).on('click','#FlickrTest', function(){
 				if( $('#FlickrTags').val() === ''){
@@ -73,7 +73,7 @@
 								var items = [];
 
 								$.each( data.items, function( key, photo ) {
-									// cacheImagesFetchURL( photo.media.m );	// Cache the image for later use
+									// $.fn.cacheImages.fetchURL( photo.media.m );	// Cache the image for later use
 
 									$('#flickrTest').append( $('<img />').cacheImages({url: photo.media.m}) );	// Using the caching immediately
 								});

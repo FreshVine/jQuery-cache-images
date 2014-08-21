@@ -207,14 +207,14 @@
 	/*
 	 *	Manually cache an image into the local storage
 	 */
-	window.cacheImagesFetchURL = function( url ){
+	$.fn.cacheImages.fetchURL = function( url ){
 		$('body').append( $('<img style="display: none;" />').addClass('cacheImagesRemove').cacheImages({url: url}) );
 	};
 	/*
 	 *	Manually cache an image into the local storage
 	 */
 	window.cacheImagesOutput = function( url, storagePrefix ){
-		if( typeof storagePrefix === 'undefined' ){ storagePrefix = 'cached'; }
+		if( typeof storagePrefix === 'undefined' ){ storagePrefix = $.fn.cacheImages.defaults.storagePrefix; }
 		var tempKey = storagePrefix + ':' + url;
 		if( window.localStorage.getItem( tempKey ) != null ){
 			return window.localStorage.getItem( tempKey );	// Image exists in the cache
@@ -235,10 +235,10 @@
 	/*
 	 *	Will remove all of the cached images from their localStorage
 	 */
-	window.cacheImagesDrop = function( storagePrefix ){
+	$.fn.cacheImages.drop = function( storagePrefix ){
 		var dropKeys = [],	// Store the keys we need to drop here
 			debug = false;
-		if( typeof storagePrefix === 'undefined' ){ storagePrefix = 'cached'; }
+		if( typeof storagePrefix === 'undefined' ){ storagePrefix = $.fn.cacheImages.defaults.storagePrefix; }
 
 		// Lets get our loop on
 		for (i = 0; i < window.localStorage.length; i++) {
