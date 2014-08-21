@@ -36,87 +36,8 @@
 
 
 		/*
-		 *	Takes the image and uses a canvas element to encode the media
-		 *	response | string | this is the raw XHR resposne data
-		 *	filename | string | this is the url accessed/filename, it's needed so that we can parse out the type of image for mimetyping
-		 *	Code base heavily on Encoding XHR image data by @mathias - http://jsperf.com/encoding-xhr-image-data/33
-		 */
-		var base64EncodeCanvas = function( img ){
-			try {
-				var canvas = document.createElement('canvas');
-				canvas.width = img.width;
-				canvas.height = img.height;
-
-				var ctx = canvas.getContext('2d');
-				ctx.drawImage(img, 0, 0);
-
-				var imgType = img.src.match(/\.(jpg|jpeg|png)$/i);
-				if( imgType && imgType.length ) {
-					imgType = imgType[1].toLowerCase() == 'jpg' ? 'jpeg' : imgType[1].toLowerCase();
-				} else {
-					throw 'Invalid image type for canvas encoder: ' + img.src;
-				}
-
-				return canvas.toDataURL('image/' + imgType);
-			} catch (e) {
-				console && console.log(e);
-				return 'error';
-			}
-		};
-
-		/*
-		 *	Takes raw image data, and outputs a base64 encoded image data string for local storage caching
-		 *	response | string | this is the raw XHR resposne data
-		 *	filename | string | this is the url accessed/filename, it's needed so that we can parse out the type of image for mimetyping
-		 *	Code base heavily on Encoding XHR image data by @mathias - http://jsperf.com/encoding-xhr-image-data/33
-		 */
-	    var base64EncodeResponse = function( raw ){
-			var base64 = '',
-				encodings = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/',
-				bytes = new Uint8Array(raw),
-				byteLength = bytes.byteLength,
-				byteRemainder = byteLength % 3,
-				mainLength = byteLength - byteRemainder,
-				a, b, c, d, chunk;
-
-			// Main loop deals with bytes in chunks of 3
-			for( var i = 0; i < mainLength; i = i + 3 ){
-				// Combine the three bytes into a single integer
-				chunk = (bytes[i] << 16) | (bytes[i + 1] << 8) | bytes[i + 2];
-				// Use bitmasks to extract 6-bit segments from the triplet
-				a = (chunk & 16515072) >> 18; // 16515072 = (2^6 - 1) << 18
-				b = (chunk & 258048) >> 12; // 258048 = (2^6 - 1) << 12
-				c = (chunk & 4032) >> 6; // 4032 = (2^6 - 1) << 6
-				d = chunk & 63; // 63 = 2^6 - 1
-				// Convert the raw binary segments to the appropriate ASCII encoding
-				base64 += encodings[a] + encodings[b] + encodings[c] + encodings[d];
-			}
-
-			// Deal with the remaining bytes and padding
-			if( byteRemainder === 1 ){
-				chunk = bytes[mainLength];
-				a = (chunk & 252) >> 2 // 252 = (2^6 - 1) << 2;
-				// Set the 4 least significant bits to zero
-				b = (chunk & 3) << 4 // 3 = 2^2 - 1;
-				base64 += encodings[a] + encodings[b] + '==';
-			}
-			else if( byteRemainder === 2 ) {
-				chunk = (bytes[mainLength] << 8) | bytes[mainLength + 1];
-				a = (chunk & 16128) >> 8 // 16128 = (2^6 - 1) << 8;
-				b = (chunk & 1008) >> 4 // 1008 = (2^6 - 1) << 4;
-				// Set the 2 least significant bits to zero
-				c = (chunk & 15) << 2 // 15 = 2^4 - 1;
-				base64 += encodings[a] + encodings[b] + encodings[c] + '=';
-			}
-
-		   return base64;
-	    };
-
-		/*
 		 * Here is the magic, this is the function that processes through the caching of the images
 		 */ 
-
-		// console.log( $(self) );
 		return this.each(function (i, img) {
 			var $this = $(img),
 				src = $this.prop('src') || $this.data('cachedImageSrc');
@@ -158,7 +79,7 @@
 
 					if( self.cacheImagesConfig.encodeOnCanvas && imgType !== 'gif' ){
 						$this.load(function () {
-							localStorage[key] = src = base64EncodeCanvas( img );
+							localStorage[key] = src = $.fn.cacheImages.base64EncodeCanvas( img );
 							if( src.substring(0,5) === 'data:' ){
 								$this.prop('src', localStorage[key] );
 								if( $this.is('.cacheImagesRemove') ){
@@ -172,7 +93,7 @@
 						xhr.responseType = 'arraybuffer'; // Cannot use the jQuery ajax method until it support this response type
 						xhr.onload = function( e ){
 							if (this.status == 200 && e.totalSize > 0 ){
-								localStorage[key] = 'data:image/' + imgType + ';base64,' + base64EncodeResponse( this.response );
+								localStorage[key] = 'data:image/' + imgType + ';base64,' + $.fn.cacheImages.base64EncodeResponse( this.response );
 								$this.prop('src', localStorage[key] );
 								if( $this.is('.cacheImagesRemove') ){
 									$this.remove();
@@ -208,6 +129,81 @@
 		storagePrefix: 'cached',	// Used to prefix the URL in at localStorage key
 		url: null	// Allows you to directly set the url for an element
 	};
+	/*
+	 *	Takes the image and uses a canvas element to encode the media
+	 *	response | string | this is the raw XHR resposne data
+	 *	filename | string | this is the url accessed/filename, it's needed so that we can parse out the type of image for mimetyping
+	 *	Code base heavily on Encoding XHR image data by @mathias - http://jsperf.com/encoding-xhr-image-data/33
+	 */
+	$.fn.cacheImages.base64EncodeCanvas = function( img ){
+		try {
+			var canvas = document.createElement('canvas');
+			canvas.width = img.width;
+			canvas.height = img.height;
+
+			var ctx = canvas.getContext('2d');
+			ctx.drawImage(img, 0, 0);
+
+			var imgType = img.src.match(/\.(jpg|jpeg|png)$/i);
+			if( imgType && imgType.length ) {
+				imgType = imgType[1].toLowerCase() == 'jpg' ? 'jpeg' : imgType[1].toLowerCase();
+			} else {
+				throw 'Invalid image type for canvas encoder: ' + img.src;
+			}
+
+			return canvas.toDataURL('image/' + imgType);
+		} catch (e) {
+			console && console.log(e);
+			return 'error';
+		}
+	};
+	/*
+	 *	Takes raw image data, and outputs a base64 encoded image data string for local storage caching
+	 *	response | string | this is the raw XHR resposne data
+	 *	filename | string | this is the url accessed/filename, it's needed so that we can parse out the type of image for mimetyping
+	 *	Code base heavily on Encoding XHR image data by @mathias - http://jsperf.com/encoding-xhr-image-data/33
+	 */
+	$.fn.cacheImages.base64EncodeResponse = function( raw ){
+		var base64 = '',
+			encodings = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/',
+			bytes = new Uint8Array(raw),
+			byteLength = bytes.byteLength,
+			byteRemainder = byteLength % 3,
+			mainLength = byteLength - byteRemainder,
+			a, b, c, d, chunk;
+
+		// Main loop deals with bytes in chunks of 3
+		for( var i = 0; i < mainLength; i = i + 3 ){
+			// Combine the three bytes into a single integer
+			chunk = (bytes[i] << 16) | (bytes[i + 1] << 8) | bytes[i + 2];
+			// Use bitmasks to extract 6-bit segments from the triplet
+			a = (chunk & 16515072) >> 18; // 16515072 = (2^6 - 1) << 18
+			b = (chunk & 258048) >> 12; // 258048 = (2^6 - 1) << 12
+			c = (chunk & 4032) >> 6; // 4032 = (2^6 - 1) << 6
+			d = chunk & 63; // 63 = 2^6 - 1
+			// Convert the raw binary segments to the appropriate ASCII encoding
+			base64 += encodings[a] + encodings[b] + encodings[c] + encodings[d];
+		}
+
+		// Deal with the remaining bytes and padding
+		if( byteRemainder === 1 ){
+			chunk = bytes[mainLength];
+			a = (chunk & 252) >> 2 // 252 = (2^6 - 1) << 2;
+			// Set the 4 least significant bits to zero
+			b = (chunk & 3) << 4 // 3 = 2^2 - 1;
+			base64 += encodings[a] + encodings[b] + '==';
+		}
+		else if( byteRemainder === 2 ) {
+			chunk = (bytes[mainLength] << 8) | bytes[mainLength + 1];
+			a = (chunk & 16128) >> 8 // 16128 = (2^6 - 1) << 8;
+			b = (chunk & 1008) >> 4 // 1008 = (2^6 - 1) << 4;
+			// Set the 2 least significant bits to zero
+			c = (chunk & 15) << 2 // 15 = 2^4 - 1;
+			base64 += encodings[a] + encodings[b] + encodings[c] + '=';
+		}
+
+	   return base64;
+    };
 	/*
 	 *	Manually cache an image into the local storage
 	 */
