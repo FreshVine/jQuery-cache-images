@@ -49,7 +49,7 @@
 			var	key = self.cacheImagesConfig.storagePrefix + ':' + src,	// Prepare the image key
 				localSrcEncoded = $.fn.cacheImages.get( key );
 
-			if( $.fn.cacheImages.storageAvailable() ){	// See if local storage is working
+			if( $.fn.cacheImages.storageAvailable() === false ){	// See if local storage is working
 				if( self.cacheImagesConfig.debug ){ console.log("storage method is not available"); }
 				return false;	// Unable to cache, so stop looping
 			}
@@ -155,14 +155,13 @@
 	/*
 	 *	Check if the client has this storage method available
 	 */
-	$.fn.cacheImages.storageAvailable = function(){ return typeof localStorage !== "object"; };
+	$.fn.cacheImages.storageAvailable = function(){ return typeof localStorage === "object"; };
 	/*
 	 *	Saves the encoded image data into the storage tool for the provided key
 	 *	key | string | the full key to use including the prefix
 	 *	encodedString | string | the base 64 encoded string to assign to the key
 	 */
 	$.fn.cacheImages.set = function( key, encodedString ){	localStorage[key] = encodedString; };
-
 	/*
 	 *	Gets the image from the storage system. Will return false if the key does not exist
 	 *	key | string | the full key to use including the prefix
