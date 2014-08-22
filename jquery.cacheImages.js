@@ -6,7 +6,7 @@
  *
  * @author Paul Prins
  * @link http://paulprins.net
- * @version 1.2.0
+ * @version 1.3.0
  * @requires jQuery v1.7 or later
  *
  * Official jQuery plugin page: 
@@ -46,11 +46,11 @@
 				$this.prop('src', '');
 			}
 
-			var	key = self.cacheImagesConfig.storagePrefix + ':' + src,	// Prepare the localStorage key
-				localSrcEncoded = localStorage[key];
+			var	key = self.cacheImagesConfig.storagePrefix + ':' + src,	// Prepare the image key
+				localSrcEncoded = $.fn.cacheImages.get( key );
 
-			if( typeof localStorage !== "object" ){	// See if local storage is working
-				if( self.cacheImagesConfig.debug ){ console.log("localStorage is not available"); }
+			if( $.fn.cacheImages.storageAvailable() ){	// See if local storage is working
+				if( self.cacheImagesConfig.debug ){ console.log("storage method is not available"); }
 				return false;	// Unable to cache, so stop looping
 			}
 
@@ -73,15 +73,17 @@
 				if( typeof imgType === 'undefined' ){ return true; }
 
 
-				if( localStorage[key] !== 'pending' ){
-					localStorage[key] = 'pending';
+				var currentValue = $.fn.cacheImages.get(key);
+				if( currentValue !== 'pending' ){
+					$.fn.cacheImages.set( key, 'pending' );
 					$this.data('cachedImageSrc', src);
 
 					if( self.cacheImagesConfig.encodeOnCanvas && imgType !== 'gif' ){
 						$this.load(function () {
-							localStorage[key] = src = $.fn.cacheImages.base64EncodeCanvas( img );
+							newSrc = $.fn.cacheImages.base64EncodeCanvas( img );	// Process the image
+							$.fn.cacheImages.set( key, newSrc );	// Save the media
 							if( src.substring(0,5) === 'data:' ){
-								$this.prop('src', localStorage[key] );
+								$this.prop('src', newSrc );
 								if( $this.is('.cacheImagesRemove') ){
 									$this.remove();
 								}
@@ -92,25 +94,31 @@
 						xhr.open('GET', src, true);
 						xhr.responseType = 'arraybuffer'; // Cannot use the jQuery ajax method until it support this response type
 						xhr.onload = function( e ){
+							newSrc = '';
 							if (this.status == 200 ){
-								localStorage[key] = 'data:image/' + imgType + ';base64,' + $.fn.cacheImages.base64EncodeResponse( this.response );
+								newSrc = 'data:image/' + imgType + ';base64,' + $.fn.cacheImages.base64EncodeResponse( this.response );
+								$.fn.cacheImages.set( key, newSrc );	// Save the media
 							}
 
-							if( localStorage[key] !== 'data:image/' + imgType + ';base64,'){
-								$this.prop('src', localStorage[key] );
+							if( newSrc.length !== 0 && newSrc !== 'data:image/' + imgType + ';base64,'){	// it appended image data
+								$this.prop('src', newSrc );
 								if( $this.is('.cacheImagesRemove') ){
 									$this.remove();
 								}
 
 								self.cacheImagesConfig.done.call( $this, false );
 								self.cacheImagesConfig.always.call( $this );
-							}else{
-								localStorage[key] = 'error';
+							}else{	// It did not append image data
+								$.fn.cacheImages.set( key, 'error' );	// Save the media
+								var defaultKey = self.cacheImagesConfig.storagePrefix + ':' + self.cacheImagesConfig.defaultSrc;
+								if( typeof self.cacheImagesConfig.defaultSrc !== 'undefined' ){
+									defaultSrcString = $.fn.cacheImages.get( defaultKey );
+								}
+								
 								// Display the default image
 								if( typeof self.cacheImagesConfig.defaultSrc !== 'undefined' ){
-									var defaultKey = self.cacheImagesConfig.storagePrefix + ':' + self.cacheImagesConfig.defaultSrc;
-									if( typeof localStorage[defaultKey] !== 'undefined' ){
-										$this.prop('src', localStorage[defaultKey] );
+									if( defaultSrcString !== false ){
+										$this.prop('src', defaultSrcString );
 										self.cacheImagesConfig.done.call( $this );
 										self.cacheImagesConfig.always.call( $this );
 									}else{
@@ -143,6 +151,27 @@
 		fail: function(){},	// Call back after unable to cache an image
 		storagePrefix: 'cached',	// Used to prefix the URL in at localStorage key
 		url: null	// Allows you to directly set the url for an element
+	};
+	/*
+	 *	Check if the client has this storage method available
+	 */
+	$.fn.cacheImages.storageAvailable = function(){ return typeof localStorage !== "object"; };
+	/*
+	 *	Saves the encoded image data into the storage tool for the provided key
+	 *	key | string | the full key to use including the prefix
+	 *	encodedString | string | the base 64 encoded string to assign to the key
+	 */
+	$.fn.cacheImages.set = function( key, encodedString ){	localStorage[key] = encodedString; };
+
+	/*
+	 *	Gets the image from the storage system. Will return false if the key does not exist
+	 *	key | string | the full key to use including the prefix
+	 */
+	$.fn.cacheImages.get = function( key ){
+		if( typeof localStorage[key] === 'undefined' )
+			return false;
+
+		return localStorage[key];
 	};
 	/*
 	 *	Takes the image and uses a canvas element to encode the media
@@ -273,7 +302,7 @@
 			window.localStorage.removeItem( dropKeys[i] );
 		}
 
-		if( debug ){ console.log( 'Dropped ' + dropKeys.length + ' images from localStorage' ); }	// Provide a bit of feedback for developers
+		if( debug ){ console.log( 'Dropped ' + dropKeys.length + ' images from storage' ); }	// Provide a bit of feedback for developers
 		return true;
 	};
 })(jQuery);
