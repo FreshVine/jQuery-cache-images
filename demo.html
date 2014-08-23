@@ -27,10 +27,10 @@
 	<p>Images are kept in browser's Local Storage as a base64 encoded string. Below are three images and an image that links to a non-existant file so it shows the default.</p>
 
 	<div id="DemoImages">
-		<img src="assets/x-all-the-things.png" />
-		<img src="assets/cat.gif" />
-		<img src="assets/warhol.jpg" />
-		<img src="assets/broken-image-path.jpg" />
+		<img id="test1" src="assets/x-all-the-things.png" />
+		<img id="test2" src="assets/cat.gif" />
+		<img id="test3" src="assets/warhol.jpg" />
+		<img id="test4" src="assets/broken-image-path.jpg" />
 	</div>
 
 
@@ -52,7 +52,9 @@
 
 	<script type="text/javascript">
 		// $.fn.cacheImages.defaults.defaultImage = 'http://upload.wikimedia.org/wikipedia/commons/f/f8/Monocle_with_gallery.jpg';
-		$('#DemoImages img').cacheImages();
+		$(document).ready(function(){
+			$('#DemoImages img#test4').cacheImages();
+		});
 		$(function(){
 			// $('#flickrTest').cacheImages({debug: true});
 			$(document).on('click','#dropCache', function(){ $.fn.cacheImages.drop();	});
