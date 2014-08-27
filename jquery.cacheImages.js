@@ -126,11 +126,11 @@
 											if( typeof self.cacheImagesConfig.defaultSrc !== 'undefined' ){
 												if( defaultSrcString !== false ){
 													this.prop('src', defaultSrcString );
-													self.cacheImagesConfig.done.call( this );
+													self.cacheImagesConfig.done.call( this, defaultSrcString );
 													self.cacheImagesConfig.always.call( this );
 												}else{
 													this.cacheImages({url: self.cacheImagesConfig.defaultSrc });	// Will cache it, and display it here
-												    self.cacheImagesConfig.done.call( this );
+												    self.cacheImagesConfig.done.call( this, defaultSrcString );
 													self.cacheImagesConfig.always.call( this );
 												}
 											}else{
@@ -156,7 +156,7 @@
 		always: function(){},	// Will always be called at the end of the caching attempt
 		debug: false,	// Boolean value to enable or disable some of the console messaging for trouble shooting
 		defaultImage: 'data:image/png;base64,/9j/4AAQSkZJRgABAgAAZABkAAD/7AARRHVja3kAAQAEAAAAHgAA/+4ADkFkb2JlAGTAAAAAAf/bAIQAEAsLCwwLEAwMEBcPDQ8XGxQQEBQbHxcXFxcXHx4XGhoaGhceHiMlJyUjHi8vMzMvL0BAQEBAQEBAQEBAQEBAQAERDw8RExEVEhIVFBEUERQaFBYWFBomGhocGhomMCMeHh4eIzArLicnJy4rNTUwMDU1QEA/QEBAQEBAQEBAQEBA/8AAEQgAZABkAwEiAAIRAQMRAf/EAEsAAQEAAAAAAAAAAAAAAAAAAAAFAQEAAAAAAAAAAAAAAAAAAAAAEAEAAAAAAAAAAAAAAAAAAAAAEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwCwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD//2Q==',	// URL or base64 string for the default image (will obviously get cached) - default is at assets/default.jpg
-		done: function(){},	// Call back after the image has been cached
+		done: function( image ){},	// Call back after the image has been cached
 		encodeOnCanvas: false,	// This is still experimental and should be disabled in production
 		fail: function(){},	// Call back after unable to cache an image
 		ready: true,	// Force the caching to wait for a ready state before processing (for storage methods requiring connections be built)
