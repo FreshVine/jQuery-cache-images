@@ -52,8 +52,18 @@
 
 	<script type="text/javascript">
 		// $.fn.cacheImages.defaults.defaultImage = 'http://upload.wikimedia.org/wikipedia/commons/f/f8/Monocle_with_gallery.jpg';
+		// $.fn.cacheImages.defaults.debug = true;
+		// $.fn.cacheImages.defaults.always = function(){
+		// 	console.log('finished running');
+		// };
+		// $.fn.cacheImages.defaults.done = function(){
+		// 	console.log('Finished Correctly');
+		// };
+		// $.fn.cacheImages.defaults.fail = function(){
+		// 	console.log('Error Happened');
+		// };
 		$(document).ready(function(){
-			$('#DemoImages img#test4').cacheImages();
+			$('#DemoImages img').cacheImages();
 		});
 		$(function(){
 			// $('#flickrTest').cacheImages({debug: true});

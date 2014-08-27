@@ -39,114 +39,113 @@
 		 * Here is the magic, this is the function that processes through the caching of the images
 		 */ 
 		return this.each(function (i, img) {
-			var $this = $(img),
-				src = $this.prop('src') || $this.data('cachedImageSrc');
-			if( self.cacheImagesConfig.url !== null ){	// URL set in the opts
-				src = self.cacheImagesConfig.url;
-				$this.prop('src', '');
-			}
-
 			//
 			// Check if we can actually continue with this
-			if( $.fn.cacheImages.storageAvailable() === false ){	// See if local storage is working
-				if( self.cacheImagesConfig.debug ){ console.log("storage method is not available"); }
-				return false;	// Unable to cache, so stop looping
-			}
-
-			if( typeof src === 'undefined' ){ return true; }	// Move to the next item
-			if( typeof $this.prop('src') !== 'undefined' && $this.prop('src').substring(0,5) === 'data:' ){ return true; }	// This has already been converted
-			// Check if we can actually continue with this
-			//
-
-			var	key = self.cacheImagesConfig.storagePrefix + ':' + src;	// Prepare the image key
-			$.fn.cacheImages.get( $this, key, function( key, localSrcEncoded ){
-
-				if( localSrcEncoded && /^data:image/.test( localSrcEncoded ) ) {
-					// Check if the image has already been cached, if it has lets bounce out of here
-					this.data('cachedImageSrc', src);
-					this.prop('src', localSrcEncoded);
-				}else{
-					// The image has not yet been cached, so we need to get on that.
-					this.prop('src', '');	// This will cancel the request if it hasn't already been finished
-					var imgType = src.match(/\.(jpg|jpeg|png|gif)$/i);	// Break out the filename to get the type
-					if( imgType && imgType.length){	// Get us the type of file
-						imgType = imgType[1].toLowerCase() == 'jpg' ? 'jpeg' : imgType[1].toLowerCase();
-					}
-					if( typeof imgType === 'undefined' || localSrcEncoded === 'pending' ){ 
-						// This is either not an image, or the URL is already being processed somewhere else
-						self.cacheImagesConfig.fail.call( $this );
-						self.cacheImagesConfig.always.call( $this );
-						return;	// stop running
-					}
+			$.fn.cacheImages.storageAvailable( $(img), i, img, function(i, img){
+				var $this = $(img),
+					src = $this.prop('src') || $this.data('cachedImageSrc');
+				if( self.cacheImagesConfig.url !== null ){	// URL set in the opts
+					src = self.cacheImagesConfig.url;
+					$this.prop('src', '');
+				}
 
 
-					this.data('cachedImageSrc', src);	// store the source url incase we need it in the future
-					$.fn.cacheImages.set( this, key, 'pending', function( key, encodedString){});	// Set it to pending while we fetch and process the media - will keep us from double teaming the same item
 
-					if( self.cacheImagesConfig.encodeOnCanvas && imgType !== 'gif' ){	// For some reason animated gifs do not correctly encode on the canvas
-						$this.load(function () {
-							newSrc = $.fn.cacheImages.base64EncodeCanvas( img );	// Process the image
-							$.fn.cacheImages.set( $this, key, newSrc );	// Save the media
-							if( src.substring(0,5) === 'data:' ){
-								$this.prop('src', newSrc );
-								if( $this.is('.cacheImagesRemove') ){
-									$this.remove();
-								}
-							}
-						});
-					}
-					else{
-						var xhr = new XMLHttpRequest();
-						xhr.open('GET', src, true);
-						xhr.responseType = 'arraybuffer'; // Cannot use the jQuery ajax method until it support this response type
-						xhr.onload = function( e ){
-							newSrc = '';
-							if (this.status == 200 ){
-								newSrc = 'data:image/' + imgType + ';base64,' + $.fn.cacheImages.base64EncodeResponse( this.response );
-							}
+				if( typeof src === 'undefined' ){ return true; }	// Move to the next item
+				if( typeof $this.prop('src') !== 'undefined' && $this.prop('src').substring(0,5) === 'data:' ){ return true; }	// This has already been converted
+				// Check if we can actually continue with this
+				//
 
-							$.fn.cacheImages.set( $this, key, newSrc, function( key, encodedString ){
-								// Default processing of the response
-								if( encodedString.length !== 0 && encodedString !== 'data:image/' + imgType + ';base64,'){	// it appended image data
-									this.prop('src', newSrc );
-									if( this.is('.cacheImagesRemove') ){
-										this.remove();
+				var	key = self.cacheImagesConfig.storagePrefix + ':' + src;	// Prepare the image key
+				$.fn.cacheImages.get( $this, key, function( key, localSrcEncoded ){
+
+					if( localSrcEncoded && /^data:image/.test( localSrcEncoded ) ) {
+						// Check if the image has already been cached, if it has lets bounce out of here
+						this.data('cachedImageSrc', src);
+						this.prop('src', localSrcEncoded);
+					}else{
+						// The image has not yet been cached, so we need to get on that.
+						this.prop('src', '');	// This will cancel the request if it hasn't already been finished
+						var imgType = src.match(/\.(jpg|jpeg|png|gif)$/i);	// Break out the filename to get the type
+						if( imgType && imgType.length){	// Get us the type of file
+							imgType = imgType[1].toLowerCase() == 'jpg' ? 'jpeg' : imgType[1].toLowerCase();
+						}
+						if( typeof imgType === 'undefined' || localSrcEncoded === 'pending' ){ 
+							// This is either not an image, or the URL is already being processed somewhere else
+							self.cacheImagesConfig.fail.call( $this );
+							self.cacheImagesConfig.always.call( $this );
+							return;	// stop running
+						}
+
+
+						this.data('cachedImageSrc', src);	// store the source url incase we need it in the future
+						$.fn.cacheImages.set( this, key, 'pending', function( key, encodedString ){});	// Set it to pending while we fetch and process the media - will keep us from double teaming the same item
+
+						if( self.cacheImagesConfig.encodeOnCanvas && imgType !== 'gif' ){	// For some reason animated gifs do not correctly encode on the canvas
+							$this.load(function () {
+								newSrc = $.fn.cacheImages.base64EncodeCanvas( img );	// Process the image
+								$.fn.cacheImages.set( $this, key, newSrc );	// Save the media
+								if( src.substring(0,5) === 'data:' ){
+									$this.prop('src', newSrc );
+									if( $this.is('.cacheImagesRemove') ){
+										$this.remove();
 									}
+								}
+							});
+						}
+						else{
+							var xhr = new XMLHttpRequest();
+							xhr.open('GET', src, true);
+							xhr.responseType = 'arraybuffer'; // Cannot use the jQuery ajax method until it support this response type
+							xhr.onload = function( e ){
+								newSrc = '';
+								if (this.status == 200 ){
+									newSrc = 'data:image/' + imgType + ';base64,' + $.fn.cacheImages.base64EncodeResponse( this.response );
+								}
 
-									self.cacheImagesConfig.done.call( this, false );
-									self.cacheImagesConfig.always.call( this );
-									return;
-								}else{
-									// It did not append image data
-									$.fn.cacheImages.set( this, key, 'error', function( key, encodedString ){
-										var defaultKey = self.cacheImagesConfig.storagePrefix + ':' + self.cacheImagesConfig.defaultSrc;
-										if( typeof self.cacheImagesConfig.defaultSrc !== 'undefined' ){
-											defaultSrcString = $.fn.cacheImages.get( this, defaultKey );
+								$.fn.cacheImages.set( $this, key, newSrc, function( key, encodedString ){
+									// Default processing of the response
+									if( encodedString.length !== 0 && encodedString !== 'data:image/' + imgType + ';base64,'){	// it appended image data
+										this.prop('src', newSrc );
+										if( this.is('.cacheImagesRemove') ){
+											this.remove();
 										}
 
-										// Display the default image
-										if( typeof self.cacheImagesConfig.defaultSrc !== 'undefined' ){
-											if( defaultSrcString !== false ){
-												this.prop('src', defaultSrcString );
-												self.cacheImagesConfig.done.call( this );
-												self.cacheImagesConfig.always.call( this );
+										self.cacheImagesConfig.done.call( this, false );
+										self.cacheImagesConfig.always.call( this );
+										return;
+									}else{
+										// It did not append image data
+										$.fn.cacheImages.set( this, key, 'error', function( key, encodedString ){
+											var defaultKey = self.cacheImagesConfig.storagePrefix + ':' + self.cacheImagesConfig.defaultSrc;
+											if( typeof self.cacheImagesConfig.defaultSrc !== 'undefined' ){
+												defaultSrcString = $.fn.cacheImages.get( this, defaultKey );
+											}
+
+											// Display the default image
+											if( typeof self.cacheImagesConfig.defaultSrc !== 'undefined' ){
+												if( defaultSrcString !== false ){
+													this.prop('src', defaultSrcString );
+													self.cacheImagesConfig.done.call( this );
+													self.cacheImagesConfig.always.call( this );
+												}else{
+													this.cacheImages({url: self.cacheImagesConfig.defaultSrc });	// Will cache it, and display it here
+												    self.cacheImagesConfig.done.call( this );
+													self.cacheImagesConfig.always.call( this );
+												}
 											}else{
-												this.cacheImages({url: self.cacheImagesConfig.defaultSrc });	// Will cache it, and display it here
-											    self.cacheImagesConfig.done.call( this );
+												this.prop('src', self.cacheImagesConfig.defaultImage );
+												self.cacheImagesConfig.fail.call( this );
 												self.cacheImagesConfig.always.call( this );
 											}
-										}else{
-											this.prop('src', self.cacheImagesConfig.defaultImage );
-											self.cacheImagesConfig.fail.call( this );
-											self.cacheImagesConfig.always.call( this );
-										}
-									});	// Replace the response with an error - will attempt to re-cache the next time around
-								}
-							});	// Save the media
-						};
-						xhr.send();
+										});	// Replace the response with an error - will attempt to re-cache the next time around
+									}
+								});	// Save the media
+							};
+							xhr.send();
+						}
 					}
-				}
+				});	
 			});
 		});
 
@@ -160,13 +159,22 @@
 		done: function(){},	// Call back after the image has been cached
 		encodeOnCanvas: false,	// This is still experimental and should be disabled in production
 		fail: function(){},	// Call back after unable to cache an image
+		ready: true,	// Force the caching to wait for a ready state before processing (for storage methods requiring connections be built)
 		storagePrefix: 'cached',	// Used to prefix the URL in at localStorage key
 		url: null	// Allows you to directly set the url for an element
 	};
 	/*
 	 *	Check if the client has this storage method available
 	 */
-	$.fn.cacheImages.storageAvailable = function(){ return typeof localStorage === "object"; };
+	$.fn.cacheImages.storageAvailable = function(thisElem, i, img, callbackFunction){ 
+		 if( typeof localStorage === "object" ){
+	        callbackFunction.call( thisElem, i, img );	// This is the structure to use for our callbacks
+			return;
+		 }
+
+		if( $.fn.cacheImages.defaults.debug ){ console.log('localStorage not available'); }
+		return;
+	 };
 	/*
 	 *	Saves the encoded image data into the storage tool for the provided key
 	 *	key | string | the full key to use including the prefix

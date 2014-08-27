@@ -3,7 +3,7 @@
 Plugin for jQuery that allows for the easy caching of image files in the browsers localStorage. The local storage approach allows the media to persist across sessions, while the browser manages all of the cross-domain privacy protections.  
   
 ## Using the Plugin  
-The plugin can be used two ways. It can either be applied to a specific element in the DOM, or you can apply it to a container that will have images within it. Both approached will bind the Cache Image plugin to all future changes that occur to those elements or their children.  
+The plugin can be used two ways. It can either be applied to a specific element in the DOM, or you can apply it to a container that will have images within it (coming soon). The plugin runs asynchronously as it fetches, processes and stores the images locally. You can write alternate storage approaches by mimicing the jquery.cacheImages.indexeddb.js script. Or if you are looking to use IndexedDB you can just load that script after the cacheImages.js script and before you invoke cacheImages(). Using localStorage will be faster, but is limited to browser restrictions with a qouta of about 5mb. IndexedDB will have a significantly larger qouta (the exact amount depends upon the client).
   
 **Options**  
 Each of these is optional. You can set them in the function call (locally), or set them globally.  
