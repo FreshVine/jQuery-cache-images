@@ -117,22 +117,12 @@
 									}else{
 										// It did not append image data
 										$.fn.cacheImages.set( this, key, 'error', function( key, encodedString ){
-											var defaultKey = self.cacheImagesConfig.storagePrefix + ':' + self.cacheImagesConfig.defaultSrc;
-											if( typeof self.cacheImagesConfig.defaultSrc !== 'undefined' ){
-												defaultSrcString = $.fn.cacheImages.get( this, defaultKey );
-											}
 
 											// Display the default image
 											if( typeof self.cacheImagesConfig.defaultSrc !== 'undefined' ){
-												if( defaultSrcString !== false ){
-													this.prop('src', defaultSrcString );
-													self.cacheImagesConfig.done.call( this, defaultSrcString );
-													self.cacheImagesConfig.always.call( this );
-												}else{
-													this.cacheImages({url: self.cacheImagesConfig.defaultSrc });	// Will cache it, and display it here
-												    self.cacheImagesConfig.done.call( this, defaultSrcString );
-													self.cacheImagesConfig.always.call( this );
-												}
+												self.cacheImagesConfig.url = self.cacheImagesConfig.defaultImage;	// set the default if we can reach it
+												this.cacheImages(self.cacheImagesConfig);	
+												return; // stop progression
 											}else{
 												this.prop('src', self.cacheImagesConfig.defaultImage );
 												self.cacheImagesConfig.fail.call( this );
