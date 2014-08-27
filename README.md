@@ -43,9 +43,9 @@ Attempts to cache that image into your clients browser local storage. This can b
 These images would later be automatically placed due to element or parent binding, or you could manually place them (see below).
 
 ### Manually retrieving an image
-`$.fn.cacheImages.Output('http://upload.wikimedia.org/wikipedia/commons/9/92/Muraltmuur.jpg');`  
+`$.fn.cacheImages.Output('http://upload.wikimedia.org/wikipedia/commons/9/92/Muraltmuur.jpg', null, function(image){ console.log('From Cache: ' + image); } );`  
   
-If you need to use an image in your inline css, or in another context where you just need the encoded string you should use this function. It will return the encoded string if it has already been cached, or it will return the default (if that is already encoded), or null. This will not fetch the URL since that is an asynchronous event that cannot return your output.
+If you need to use an image in your inline css, or in another context where you just need the encoded string you should use this function. It will return the encoded string if it has already been cached, or it will return the default (if that is already encoded), or null. This will not fetch the URL.
 
 ### Drop the cached images  
 `$.fn.cacheImages.drop();`  
