@@ -10,7 +10,7 @@
  * @requires jQuery v1.7 or later
  *
  * Official jQuery plugin page: 
- * Find source on GitHub: https://github.com/FreshVine/jQuery-cache-image
+ * Find source on GitHub: https://github.com/FreshVine/jQuery-cache-images
  *
  * Dual licensed under the MIT and GPL licenses:
  *   http://www.opensource.org/licenses/mit-license.php
@@ -72,8 +72,8 @@
 						}
 						if( typeof imgType === 'undefined' || localSrcEncoded === 'pending' ){ 
 							// This is either not an image, or the URL is already being processed somewhere else
-							self.cacheImagesConfig.fail.call( $this );
-							self.cacheImagesConfig.always.call( $this );
+							self.cacheImagesConfig.fail.call( this );
+							self.cacheImagesConfig.always.call( this );
 							return;	// stop running
 						}
 
@@ -84,17 +84,18 @@
 						if( self.cacheImagesConfig.encodeOnCanvas && imgType !== 'gif' ){	// For some reason animated gifs do not correctly encode on the canvas
 							$this.load(function () {
 								newSrc = $.fn.cacheImages.base64EncodeCanvas( img );	// Process the image
-								$.fn.cacheImages.set( $this, key, newSrc );	// Save the media
+								$.fn.cacheImages.set( this, key, newSrc );	// Save the media
 								if( src.substring(0,5) === 'data:' ){
-									$this.prop('src', newSrc );
-									if( $this.is('.cacheImagesRemove') ){
-										$this.remove();
+									this.prop('src', newSrc );
+									if( this.is('.cacheImagesRemove') ){
+										this.remove();
 									}
 								}
 							});
 						}
 						else{
-							var xhr = new XMLHttpRequest();
+							var xhr = new XMLHttpRequest(),
+								thisElem = this;
 							xhr.open('GET', src, true);
 							xhr.responseType = 'arraybuffer'; // Cannot use the jQuery ajax method until it support this response type
 							xhr.onload = function( e ){
@@ -103,10 +104,10 @@
 									newSrc = 'data:image/' + imgType + ';base64,' + $.fn.cacheImages.base64EncodeResponse( this.response );
 								}
 
-								$.fn.cacheImages.set( $this, key, newSrc, function( key, encodedString ){
+								$.fn.cacheImages.set( thisElem, key, newSrc, function( key, encodedString ){
 									// Default processing of the response
 									if( encodedString.length !== 0 && encodedString !== 'data:image/' + imgType + ';base64,'){	// it appended image data
-										this.prop('src', newSrc );
+										this.prop('src', encodedString );
 										if( this.is('.cacheImagesRemove') ){
 											this.remove();
 										}
