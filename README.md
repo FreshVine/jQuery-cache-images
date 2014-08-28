@@ -48,9 +48,12 @@ These images would later be automatically placed due to element or parent bindin
 If you need to use an image in your inline css, or in another context where you just need the encoded string you should use this function. It will return the encoded string if it has already been cached, or it will return the default (if that is already encoded), or null. This will not fetch the URL.
 
 ### Drop the cached images  
-`$.fn.cacheImages.drop();`  
+`$.fn.cacheImages.drop( *url*, *storagePrefix* );`  
+`$.fn.cacheImages.drop();	// Drop all images`  
+`$.fn.cacheImages.drop('http://upload.wikimedia.org/wikipedia/commons/1/1d/Fishfinger1.jpg');	//Drop a specific image` 
+`$.fn.cacheImages.drop(null, 'cachedImages');	//Drop a set of images` 
   
-Helpful to clean up stored images from the cache without dropping everything stored. You can optionally set a *storagePrefix* in the function to only drop specific types of images.  
+Helpful to clean up stored images from the cache without dropping everything stored. You can optionally set a *url*, and/or *storagePrefix* in the function to only drop specific image, or set of images.  
   
 
 # Credits and Thanks  

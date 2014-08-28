@@ -297,21 +297,23 @@
 	/*
 	 *	Will remove all of the cached images from their localStorage
 	 */
-	$.fn.cacheImages.drop = function( storagePrefix ){
+	$.fn.cacheImages.drop = function( url, storagePrefix ){
 		var dropKeys = [],	// Store the keys we need to drop here
 			debug = false;
 		if( typeof storagePrefix === 'undefined' ){ storagePrefix = $.fn.cacheImages.defaults.storagePrefix; }
+		if( typeof url === 'undefined' ){ url = null; }
 
 		// Lets get our loop on
 		for (i = 0; i < window.localStorage.length; i++) {
 			if( window.localStorage.key(i).substr( 0,storagePrefix.length + 1 ) !== storagePrefix + ':' ){ continue; }	// Does not match our prefix?
+			if( url !== null && window.localStorage.key(i) !== storagePrefix + ':' + url ){ continue; }
 
 			dropKeys.push( window.localStorage.key(i) ); // Droping the keys here re-indexes the localStorage so that the offset in our loop is wrong
 		}
 
 		if( dropKeys.length ===  0 ){
 			if( debug ){ console.log( 'No Images to Drop' ); }
-			return true;
+			return;
 		}
 
 		// Drop the keys we found
@@ -321,6 +323,6 @@
 		}
 
 		if( debug ){ console.log( 'Dropped ' + dropKeys.length + ' images from storage' ); }	// Provide a bit of feedback for developers
-		return true;
+		return;
 	};
 })(jQuery);

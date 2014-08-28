@@ -153,10 +153,11 @@ window.indexedDB = window.indexedDB || window.mozIndexedDB || window.webkitIndex
 	/*
 	 *	Will remove all of the cached images from their localStorage
 	 */
-	$.fn.cacheImages.drop = function( storagePrefix ){
+	$.fn.cacheImages.drop = function( url, storagePrefix ){
 		var dropKeys = [],	// Store the keys we need to drop here
 			debug = false;
 		if( typeof storagePrefix === 'undefined' ){ storagePrefix = $.fn.cacheImages.defaults.storagePrefix; }
+		if( typeof url === 'undefined' ){ url = null; }
 
 		var request = window.cacheImagesDb.transaction("offlineImages", "readonly").objectStore("offlineImages").openCursor();
 		request.onsuccess = function(e) {
@@ -164,7 +165,9 @@ window.indexedDB = window.indexedDB || window.mozIndexedDB || window.webkitIndex
 			if (cursor) {
 				// Called for each matching record.
 				if( cursor.value.key.substr( 0,storagePrefix.length + 1 ) === storagePrefix + ':' ){	// Does not match our prefix?
-					dropKeys.push(cursor.value.key ); // Droping the keys here re-indexes the localStorage so that the offset in our loop is wrong
+					if( url === null || cursor.value.key === storagePrefix + ':' + url ){ 
+						dropKeys.push(cursor.value.key ); // Droping the keys here re-indexes the localStorage so that the offset in our loop is wrong
+					}
 				}
 				cursor.continue();
 			}else{
