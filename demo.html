@@ -56,7 +56,7 @@
 		// $.fn.cacheImages.defaults.always = function(){
 		// 	console.log('finished running');
 		// };
-		// $.fn.cacheImages.defaults.done = function(){
+		// $.fn.cacheImages.defaults.done = function( image ){
 		// 	console.log('Finished Correctly');
 		// };
 		// $.fn.cacheImages.defaults.fail = function(){
@@ -110,7 +110,7 @@
 			}
 
 			if( cacheKeys.length ===  0 ){
-				if( window.debug ){ console.log( 'No Images to Drop' ); }
+				if( window.debug ){ console.log( 'No Images to Display' ); }
 				return true;
 			}
 

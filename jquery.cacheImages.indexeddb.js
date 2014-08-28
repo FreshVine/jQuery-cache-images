@@ -57,6 +57,7 @@ window.indexedDB = window.indexedDB || window.mozIndexedDB || window.webkitIndex
 
 		if( $.fn.cacheImages.defaults.indexedDbStatus === true ){
 	        callbackFunction.call( thisElem, i, img );	// This is the structure to use for our callbacks
+			if( $.fn.cacheImages.defaults.debug ){ console.log('indexedDB already ready'); }
 			return;
 		}
 
@@ -64,18 +65,19 @@ window.indexedDB = window.indexedDB || window.mozIndexedDB || window.webkitIndex
 			thisInterval = setInterval(function(){
 				intervalCount++;
 				if( $.fn.cacheImages.defaults.indexedDbStatus === true ){
-					if( $.fn.cacheImages.defaults.debug ){ console.log('indexedDB ready to use'); }
+					if( $.fn.cacheImages.defaults.debug ){ console.log('indexedDB ready to use', 'indexedDB took ' + (intervalCount*50) + 'ms to conenct'); }
 			        callbackFunction.call( thisElem, i, img );	// This is the structure to use for our callbacks
 					clearInterval(thisInterval); return;
 				}
-				if( intervalCount >= 41 ){ if( $.fn.cacheImages.defaults.debug ){ console.log('indexedDB did not load'); } clearInterval(thisInterval); return;	}	// only run for 2 seconds max
+				if( intervalCount >= 41 ){	// only run for 2 seconds max - if it isn't available then there are other issues at play
+					if( $.fn.cacheImages.defaults.debug ){ console.log('indexedDB did not load'); }
+					clearInterval(thisInterval);
+					return;
+				}
 
 				if( $.fn.cacheImages.defaults.debug ){ console.log('indexedDB not yet available'); }
 			}, 50 );
-
-		// if( $.fn.cacheImages.defaults.ready === false ){}
-		// setTimeout(function(){ return 10; }, 1500);
-		return $.fn.cacheImages.defaults.indexedDbStatus;
+		return;
 	};
 	/*
 	 *	Saves the encoded image data into the storage tool for the provided key
@@ -90,7 +92,7 @@ window.indexedDB = window.indexedDB || window.mozIndexedDB || window.webkitIndex
 	        if( typeof callbackFunction === 'function' ){
 	            callbackFunction.call( thisElem, key, encodedString );	// This is the structure to use for our callbacks
 	        }
-		};
+		}
 		request.onerror = function(e){
 			self.cacheImagesConfig.fail.call( this );
 			self.cacheImagesConfig.always.call( this );
@@ -104,7 +106,9 @@ window.indexedDB = window.indexedDB || window.mozIndexedDB || window.webkitIndex
 		var tmp = window.cacheImagesDb.transaction("offlineImages",'readonly').objectStore("offlineImages").get(key);
 		tmp.onsuccess = function(e){
 			encodedString = '';
-			if( typeof e.target.result !== 'undefined' && typeof e.target.result.image === 'string' ){ encodedString = e.target.result.image; }
+			if( typeof e.target.result !== 'undefined' && typeof e.target.result.image === 'string' ){
+				encodedString = e.target.result.image;
+			}
 
 	        if( typeof callbackFunction === 'function' ){
 	            callbackFunction.call( thisElem, key, encodedString );	// This is the structure to use for our callbacks
@@ -134,10 +138,8 @@ window.indexedDB = window.indexedDB || window.mozIndexedDB || window.webkitIndex
 				if( /^data:image/.test( $.fn.cacheImages.defaults.defaultImage ) === true ){
 					image = $.fn.cacheImages.defaults.defaultImage;	// this is an encoded string
 				}else{
-					tempKey = storagePrefix + ':' + this.cacheImagesConfig.defaultImage;
-					if( window.localStorage.getItem( tempKey ) != null ){
-						return window.localStorage.getItem( tempKey );	// Default URL was already cached
-					}
+					$.fn.cacheImages.Output( $.fn.cacheImages.defaults.defaultImage, storagePrefix, callbackFunction );	// pass the callback through
+					return;
 				}
 			}
 
@@ -146,21 +148,6 @@ window.indexedDB = window.indexedDB || window.mozIndexedDB || window.webkitIndex
 	        }
 		}
 
-
-		// if( window.localStorage.getItem( tempKey ) != null ){
-		// 	return window.localStorage.getItem( tempKey );	// Image exists in the cache
-		// }else{
-		//
-		// 	if( /^data:image/.test( $.fn.cacheImages.defaults.defaultImage ) === true ){
-		// 		return this.cacheImagesConfig.defaultImage;	// this is an encoded string
-		// 	}
-		//
-		// 	tempKey = storagePrefix + ':' + this.cacheImagesConfig.defaultImage;
-		// 	if( window.localStorage.getItem( tempKey ) != null ){
-		// 		return window.localStorage.getItem( tempKey );	// Default URL was already cached
-		// 	}
-		// }
-
 		return null;	// Neither the image or the cached version existsed
 	};
 	/*
@@ -168,7 +155,7 @@ window.indexedDB = window.indexedDB || window.mozIndexedDB || window.webkitIndex
 	 */
 	$.fn.cacheImages.drop = function( storagePrefix ){
 		var dropKeys = [],	// Store the keys we need to drop here
-			debug = true;
+			debug = false;
 		if( typeof storagePrefix === 'undefined' ){ storagePrefix = $.fn.cacheImages.defaults.storagePrefix; }
 
 		var request = window.cacheImagesDb.transaction("offlineImages", "readonly").objectStore("offlineImages").openCursor();
