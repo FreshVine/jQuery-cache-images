@@ -63,6 +63,14 @@
 						// Check if the image has already been cached, if it has lets bounce out of here
 						this.data('cachedImageSrc', src);
 						this.prop('src', localSrcEncoded);
+						self.cacheImagesConfig.done.call( this, localSrcEncoded );
+						self.cacheImagesConfig.always.call( this );
+						return;
+					}else if( localSrcEncoded === 'pending' ){
+						// This is either not an image, or the URL is already being processed somewhere else
+						self.cacheImagesConfig.fail.call( this );
+						self.cacheImagesConfig.always.call( this );
+						return;	// stop running
 					}else{
 						// The image has not yet been cached, so we need to get on that.
 						this.prop('src', '');	// This will cancel the request if it hasn't already been finished
@@ -70,7 +78,7 @@
 						if( imgType && imgType.length){	// Get us the type of file
 							imgType = imgType[1].toLowerCase() == 'jpg' ? 'jpeg' : imgType[1].toLowerCase();
 						}
-						if( typeof imgType === 'undefined' || localSrcEncoded === 'pending' ){ 
+						if( typeof imgType === 'undefined' ){ 
 							// This is either not an image, or the URL is already being processed somewhere else
 							self.cacheImagesConfig.fail.call( this );
 							self.cacheImagesConfig.always.call( this );
