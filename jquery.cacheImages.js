@@ -45,7 +45,7 @@
 				var $this = $(img),
 					src;
 
-				if( $this.prop("tagName") === 'img' ){
+				if( $this.prop("tagName") === 'IMG' ){
 					$this.data('cachedImageType', 'src');
 
 					var src = $this.prop('src') || $this.data('cachedImageSrc');
@@ -144,7 +144,6 @@
 								$.fn.cacheImages.set( thisElem, key, newSrc, function( key, encodedString ){
 									// Default processing of the response
 									if( encodedString.length !== 0 && encodedString !== 'data:image/' + imgType + ';base64,'){	// it appended image data
-										console.log( this, this.data('cachedImageType'), newSrc );
 										if( this.data('cachedImageType') == 'src' ){
 											this.prop('src', encodedString );
 										}else{
