@@ -283,7 +283,7 @@
 	/*
 	 *	Retreive the encoded string from local storage
 	 */
-	$.fn.cacheImages.Output = function( url, storagePrefix, callback ){
+	$.fn.cacheImages.Output = function( url, callback, storagePrefix ){
 		if( typeof storagePrefix === 'undefined' ){ storagePrefix = $.fn.cacheImages.defaults.storagePrefix; }
 		var tempKey = storagePrefix + ':' + url;
 		if( window.localStorage.getItem( tempKey ) != null ){

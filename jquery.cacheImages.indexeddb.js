@@ -122,7 +122,7 @@ window.indexedDB = window.indexedDB || window.mozIndexedDB || window.webkitIndex
 	/*
 	 *	Retreive the encoded string from local storage, passes the value to the callback function
 	 */
-	$.fn.cacheImages.Output = function( url, storagePrefix, callbackFunction ){
+	$.fn.cacheImages.Output = function( url, callbackFunction, storagePrefix ){
 		if( typeof storagePrefix === 'undefined' || typeof storagePrefix === 'null' ){ storagePrefix = $.fn.cacheImages.defaults.storagePrefix; }
 		var tempKey = storagePrefix + ':' + url,
 			thisElem = this;
@@ -138,7 +138,7 @@ window.indexedDB = window.indexedDB || window.mozIndexedDB || window.webkitIndex
 				if( /^data:image/.test( $.fn.cacheImages.defaults.defaultImage ) === true ){
 					image = $.fn.cacheImages.defaults.defaultImage;	// this is an encoded string
 				}else{
-					$.fn.cacheImages.Output( $.fn.cacheImages.defaults.defaultImage, storagePrefix, callbackFunction );	// pass the callback through
+					$.fn.cacheImages.Output( $.fn.cacheImages.defaults.defaultImage, callbackFunction, storagePrefix );	// pass the callback through
 					return;
 				}
 			}
