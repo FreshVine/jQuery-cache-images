@@ -6,7 +6,7 @@
  *
  * @author Paul Prins
  * @link http://paulprins.net
- * @version 1.5.0
+ * @version 1.6.0
  * @requires jQuery v1.7 or later
  *
  * Official jQuery plugin page: 
@@ -43,10 +43,24 @@
 			// Check if we can actually continue with this
 			$.fn.cacheImages.storageAvailable( $(img), i, img, function(i, img){
 				var $this = $(img),
-					src = $this.prop('src') || $this.data('cachedImageSrc');
-				if( self.cacheImagesConfig.url !== null ){	// URL set in the opts
-					src = self.cacheImagesConfig.url;
-					$this.prop('src', '');
+					src;
+
+				if( $this.prop("tagName") === 'img' ){
+					$this.data('cachedImageType', 'src');
+
+					var src = $this.prop('src') || $this.data('cachedImageSrc');
+					if( self.cacheImagesConfig.url !== null ){	// URL set in the opts
+						src = self.cacheImagesConfig.url;
+						$this.prop('src', '');
+					}
+				}else{
+					$this.data('cachedImageType', 'css');
+
+					var src = $this.css('background-image').replace(/"/g,"").replace(/url\(|\)$/ig, "") || $this.data('cachedImageSrc');
+					if( self.cacheImagesConfig.url !== null ){	// URL set in the opts
+						src = self.cacheImagesConfig.url;
+						$this.css('background-image', 'url()');
+					}
 				}
 
 
@@ -62,7 +76,12 @@
 					if( localSrcEncoded && /^data:image/.test( localSrcEncoded ) ) {
 						// Check if the image has already been cached, if it has lets bounce out of here
 						this.data('cachedImageSrc', src);
-						this.prop('src', localSrcEncoded);
+						if( this.data('cachedImageType') == 'src' ){
+							this.prop('src', localSrcEncoded );
+						}else{
+							this.css('background-image', 'url(' + localSrcEncoded + ')')
+						}
+
 						self.cacheImagesConfig.done.call( this, localSrcEncoded );
 						self.cacheImagesConfig.always.call( this );
 						return;
@@ -73,7 +92,12 @@
 						return;	// stop running
 					}else{
 						// The image has not yet been cached, so we need to get on that.
-						this.prop('src', '');	// This will cancel the request if it hasn't already been finished
+
+						if( this.data('cachedImageType') == 'src' ){	// This will cancel the request if it hasn't already been finished
+							this.prop('src', '' );
+						}else{
+							this.css('background-image', 'url()');
+						}
 						var imgType = src.match(/\.(jpg|jpeg|png|gif)$/i);	// Break out the filename to get the type
 						if( imgType && imgType.length){	// Get us the type of file
 							imgType = imgType[1].toLowerCase() == 'jpg' ? 'jpeg' : imgType[1].toLowerCase();
@@ -94,7 +118,12 @@
 								newSrc = $.fn.cacheImages.base64EncodeCanvas( img );	// Process the image
 								$.fn.cacheImages.set( this, key, newSrc );	// Save the media
 								if( src.substring(0,5) === 'data:' ){
-									this.prop('src', newSrc );
+									if( this.data('cachedImageType') == 'src' ){
+										this.prop('src', newSrc );
+									}else{
+										this.css('background-image', 'url(' + newSrc + ')')
+									}
+
 									if( this.is('.cacheImagesRemove') ){
 										this.remove();
 									}
@@ -115,11 +144,14 @@
 								$.fn.cacheImages.set( thisElem, key, newSrc, function( key, encodedString ){
 									// Default processing of the response
 									if( encodedString.length !== 0 && encodedString !== 'data:image/' + imgType + ';base64,'){	// it appended image data
-										this.prop('src', encodedString );
-										if( this.is('.cacheImagesRemove') ){
-											this.remove();
+										console.log( this, this.data('cachedImageType'), newSrc );
+										if( this.data('cachedImageType') == 'src' ){
+											this.prop('src', encodedString );
+										}else{
+											this.css('background-image', 'url(' + encodedString + ')')
 										}
 
+										if( this.is('.cacheImagesRemove') ){	this.remove();	}
 										self.cacheImagesConfig.done.call( this, false );
 										self.cacheImagesConfig.always.call( this );
 										return;
@@ -133,7 +165,12 @@
 												this.cacheImages(self.cacheImagesConfig);	
 												return; // stop progression
 											}else{
-												this.prop('src', self.cacheImagesConfig.defaultImage );
+												if( this.data('cachedImageType') == 'src' ){
+													this.prop('src', self.cacheImagesConfig.defaultImage );
+												}else{
+													this.css('background-image', 'url(' + self.cacheImagesConfig.defaultImage + ')')
+												}
+
 												self.cacheImagesConfig.fail.call( this );
 												self.cacheImagesConfig.always.call( this );
 											}
