@@ -6,7 +6,7 @@
  *
  * @author Paul Prins
  * @link http://paulprins.net
- * @version 1.3.0
+ * @version 1.5.0
  * @requires jQuery v1.7 or later
  *
  * Official jQuery plugin page: 
@@ -320,17 +320,17 @@
 		}
 
 		if( dropKeys.length ===  0 ){
-			if( debug ){ console.log( 'No Images to Drop' ); }
+			if( $.fn.cacheImages.defaults.debug ){ console.log( 'No Images to Drop' ); }
 			return;
 		}
 
 		// Drop the keys we found
 		for( i = 0; i < dropKeys.length; i++ ){
-			if( debug ){ console.log( 'Dropping localStorage Key:', dropKeys[i] ); }	// Let them know what keys were dropped
+			if( $.fn.cacheImages.defaults.debug ){ console.log( 'Dropping localStorage Key:', dropKeys[i] ); }	// Let them know what keys were dropped
 			window.localStorage.removeItem( dropKeys[i] );
 		}
 
-		if( debug ){ console.log( 'Dropped ' + dropKeys.length + ' images from storage' ); }	// Provide a bit of feedback for developers
+		if( $.fn.cacheImages.defaults.debug ){ console.log( 'Dropped ' + dropKeys.length + ' images from storage' ); }	// Provide a bit of feedback for developers
 		return;
 	};
 })(jQuery);

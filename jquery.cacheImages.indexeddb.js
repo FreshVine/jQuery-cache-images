@@ -14,9 +14,9 @@ window.indexedDB = window.indexedDB || window.mozIndexedDB || window.webkitIndex
 	if( $.fn.cacheImages.defaults.debug ){ console.log('cacheImages will use indexedDB '); }
 
 	/* -- Setup everything we need for the database -- */
+	var cacheImagesDb;	// used to hold the db reference
 	if( typeof $.fn.cacheImages.defaults.indexedDbName === 'undefined' ){ $.fn.cacheImages.defaults.indexedDbName = 'cacheImages'; }	// Needs to be defined prior to instantiating this script - but after including the primary cacheImages script
 	$.fn.cacheImages.dbRequest = window.indexedDB.open( $.fn.cacheImages.defaults.indexedDbName, 1 );
-	var cacheImagesDb;	// used to hold the db reference
 	$.fn.cacheImages.defaults.indexedDbStatus = false;
 
 	// Enable
@@ -41,7 +41,7 @@ window.indexedDB = window.indexedDB || window.mozIndexedDB || window.webkitIndex
 		//Create Note
 		if(!thisDb.objectStoreNames.contains("offlineImages")) {
 			// Structure is key, image
-			console.log("making the offlineImages objectstore");
+			if( $.fn.cacheImages.defaults.debug ){ console.log("making the offlineImages objectstore"); }
 			var objectStore = thisDb.createObjectStore("offlineImages", { keyPath: "key" });
 		    var titleIndex = objectStore.createIndex("by_key", "key", {unique: true});
 		}
@@ -154,8 +154,7 @@ window.indexedDB = window.indexedDB || window.mozIndexedDB || window.webkitIndex
 	 *	Will remove all of the cached images from their localStorage
 	 */
 	$.fn.cacheImages.drop = function( url, storagePrefix ){
-		var dropKeys = [],	// Store the keys we need to drop here
-			debug = false;
+		var dropKeys = [];	// Store the keys we need to drop here
 		if( typeof storagePrefix === 'undefined' ){ storagePrefix = $.fn.cacheImages.defaults.storagePrefix; }
 		if( typeof url === 'undefined' ){ url = null; }
 
@@ -172,20 +171,20 @@ window.indexedDB = window.indexedDB || window.mozIndexedDB || window.webkitIndex
 				cursor.continue();
 			}else{
 				// No more matching records.
-				console.log('No more matching records');
+				if( $.fn.cacheImages.defaults.debug ){ console.log('No more matching records'); }
 
 				if( dropKeys.length ===  0 ){
-					if( debug ){ console.log( 'No Images to Drop' ); }
+					if( $.fn.cacheImages.defaults.debug ){ console.log( 'No Images to Drop' ); } 
 					return true;
 				}
 
 				// Drop the keys we found
 				for( i = 0; i < dropKeys.length; i++ ){
-					if( debug ){ console.log( 'Dropping localStorage Key:', dropKeys[i] ); }	// Let them know what keys were dropped
+					if( $.fn.cacheImages.defaults.debug ){console.log( 'Dropping localStorage Key:', dropKeys[i] ); }	// Let them know what keys were dropped
 					window.cacheImagesDb.transaction("offlineImages", "readwrite").objectStore("offlineImages").delete( dropKeys[i] );
 				}
 
-				if( debug ){ console.log( 'Dropped ' + dropKeys.length + ' images from indexedDB' ); }	// Provide a bit of feedback for developers
+				if( $.fn.cacheImages.defaults.debug ){ console.log( 'Dropped ' + dropKeys.length + ' images from indexedDB' ); }	// Provide a bit of feedback for developers
 				return true;
 			}
 		};
