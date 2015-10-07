@@ -375,7 +375,7 @@ self.cacheImagesConfig.forceSave
 		}
 
         if( typeof callbackFunction === 'function' ){
-            callbackFunction.call( thisElem, url );	// This is the structure to use for our callbacks
+            callbackFunction.call( url );	// This is the structure to use for our callbacks
         }
 
 		return;
