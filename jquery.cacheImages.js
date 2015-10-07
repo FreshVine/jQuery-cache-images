@@ -24,6 +24,9 @@
 		// Check for canvas support
 		this.cacheImagesConfig.encodeOnCanvas = typeof HTMLCanvasElement != undefined ? this.cacheImagesConfig.encodeOnCanvas : false;
 
+		// Check for force Save regardless of current cached state
+		if( typeof this.cacheImagesConfig.forceSave == undefined ){ this.cacheImagesConfig.forceSave = false; }
+
 		var self = this;
 
 
@@ -72,8 +75,8 @@
 
 				var	key = self.cacheImagesConfig.storagePrefix + ':' + src;	// Prepare the image key
 				$.fn.cacheImages.get( $this, key, function( key, localSrcEncoded ){
-
-					if( localSrcEncoded && /^data:image/.test( localSrcEncoded ) ) {
+self.cacheImagesConfig.forceSave
+					if( localSrcEncoded && /^data:image/.test( localSrcEncoded ) && self.cacheImagesConfig.forceSave == false ) {
 						// Check if the image has already been cached, if it has lets bounce out of here
 						this.data('cachedImageSrc', src);
 						if( this.data('cachedImageType') == 'src' ){
@@ -319,7 +322,7 @@
 	/*
 	 *	Retreive the encoded string from local storage
 	 */
-	$.fn.cacheImages.Output = function( url, callback, storagePrefix ){
+	$.fn.cacheImages.Output = function( url, callbackFunction, storagePrefix ){
 		if( typeof storagePrefix === 'undefined' ){ storagePrefix = $.fn.cacheImages.defaults.storagePrefix; }
 		var tempKey = storagePrefix + ':' + url;
 		if( window.localStorage.getItem( tempKey ) != null ){
@@ -332,6 +335,10 @@
 
 			tempKey = storagePrefix + ':' + this.cacheImagesConfig.defaultImage;
 			if( window.localStorage.getItem( tempKey ) != null ){
+		        if( typeof callbackFunction === 'function' ){
+		            callbackFunction.call( thisElem, tempKey );	// This is the structure to use for our callbacks
+		        }
+
 				return window.localStorage.getItem( tempKey );	// Default URL was already cached
 			}
 		}
@@ -341,11 +348,11 @@
 	/*
 	 *	Will remove all of the cached images from their localStorage
 	 */
-	$.fn.cacheImages.drop = function( url, storagePrefix ){
+	$.fn.cacheImages.drop = function( url, callbackFunction, storagePrefix ){
 		var dropKeys = [],	// Store the keys we need to drop here
 			debug = false;
 		if( typeof storagePrefix === 'undefined' ){ storagePrefix = $.fn.cacheImages.defaults.storagePrefix; }
-		if( typeof url === 'undefined' ){ url = null; }
+		if( typeof url === 'undefined' ){ url = null; }	// DROP ALL THE THINGS
 
 		// Lets get our loop on
 		for (i = 0; i < window.localStorage.length; i++) {
@@ -357,16 +364,20 @@
 
 		if( dropKeys.length ===  0 ){
 			if( $.fn.cacheImages.defaults.debug ){ console.log( 'No Images to Drop' ); }
-			return;
+		}else{
+			// Drop the keys we found
+			for( i = 0; i < dropKeys.length; i++ ){
+				if( $.fn.cacheImages.defaults.debug ){ console.log( 'Dropping localStorage Key:', dropKeys[i] ); }	// Let them know what keys were dropped
+				window.localStorage.removeItem( dropKeys[i] );
+			}
+
+			if( $.fn.cacheImages.defaults.debug ){ console.log( 'Dropped ' + dropKeys.length + ' images from storage' ); }	// Provide a bit of feedback for developers
 		}
 
-		// Drop the keys we found
-		for( i = 0; i < dropKeys.length; i++ ){
-			if( $.fn.cacheImages.defaults.debug ){ console.log( 'Dropping localStorage Key:', dropKeys[i] ); }	// Let them know what keys were dropped
-			window.localStorage.removeItem( dropKeys[i] );
-		}
+        if( typeof callbackFunction === 'function' ){
+            callbackFunction.call( thisElem, url );	// This is the structure to use for our callbacks
+        }
 
-		if( $.fn.cacheImages.defaults.debug ){ console.log( 'Dropped ' + dropKeys.length + ' images from storage' ); }	// Provide a bit of feedback for developers
 		return;
 	};
 })(jQuery);

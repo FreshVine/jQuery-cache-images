@@ -20,6 +20,7 @@ $.fn.cacheImages.defaults.debug = true;	// Globally Set
 * *fail*: callback when the caching is not possible (unable to reach the file, or unable to cache file)
 * *storagePrefix*: Used to prefix the URL in the localStorage key	[default: 'cached']  
 * *url*: Set the image URL to be cached for the selector [default: null]  
+* *forceSave*: Will force the call to cache to save the current URL even if media from that URL has already been cached. [default: false] **Don't set Globally** 
   
 ### Attaching to an Element  
 `$('img#AnElement').cacheImages();`  
@@ -55,7 +56,9 @@ If you need to use an image in your inline css, or in another context where you 
   
 Helpful to clean up stored images from the cache without dropping everything stored. You can optionally set a *url*, and/or *storagePrefix* in the function to only drop specific image, or set of images.  
   
-
+## indexDB and callbacks  
+One of the major differences between localstorage and indexDB is that the queries to the database happen out of the functional flow of your script. This means you must use callbacks to excecute scripts with the outcome, or after the conclusion of the previous script. Not using callbacks can result in weird behavior.
+  
 # Credits and Thanks  
 * Based Heavily off of @doomhz plugin [jQueryImageCache](https://github.com/doomhz/jQuery-Image-Cache)
 * Utilizing base64 encoding from @mathias [Encoding XHR image data](http://jsperf.com/encoding-xhr-image-data/33)

@@ -153,10 +153,10 @@ window.indexedDB = window.indexedDB || window.mozIndexedDB || window.webkitIndex
 	/*
 	 *	Will remove all of the cached images from their localStorage
 	 */
-	$.fn.cacheImages.drop = function( url, storagePrefix ){
+	$.fn.cacheImages.drop = function( url, callbackFunction, storagePrefix ){
 		var dropKeys = [];	// Store the keys we need to drop here
 		if( typeof storagePrefix === 'undefined' ){ storagePrefix = $.fn.cacheImages.defaults.storagePrefix; }
-		if( typeof url === 'undefined' ){ url = null; }
+		if( typeof url === 'undefined' ){ url = null; }	// DROP ALL THE THINGS
 
 		var request = window.cacheImagesDb.transaction("offlineImages", "readonly").objectStore("offlineImages").openCursor();
 		request.onsuccess = function(e) {
@@ -175,16 +175,19 @@ window.indexedDB = window.indexedDB || window.mozIndexedDB || window.webkitIndex
 
 				if( dropKeys.length ===  0 ){
 					if( $.fn.cacheImages.defaults.debug ){ console.log( 'No Images to Drop' ); } 
-					return true;
+				}else{
+					// Drop the keys we found
+					for( i = 0; i < dropKeys.length; i++ ){
+						if( $.fn.cacheImages.defaults.debug ){console.log( 'Dropping localStorage Key:', dropKeys[i] ); }	// Let them know what keys were dropped
+						window.cacheImagesDb.transaction("offlineImages", "readwrite").objectStore("offlineImages").delete( dropKeys[i] );
+					}
+
+					if( $.fn.cacheImages.defaults.debug ){ console.log( 'Dropped ' + dropKeys.length + ' images from indexedDB' ); }	// Provide a bit of feedback for developers
 				}
 
-				// Drop the keys we found
-				for( i = 0; i < dropKeys.length; i++ ){
-					if( $.fn.cacheImages.defaults.debug ){console.log( 'Dropping localStorage Key:', dropKeys[i] ); }	// Let them know what keys were dropped
-					window.cacheImagesDb.transaction("offlineImages", "readwrite").objectStore("offlineImages").delete( dropKeys[i] );
-				}
-
-				if( $.fn.cacheImages.defaults.debug ){ console.log( 'Dropped ' + dropKeys.length + ' images from indexedDB' ); }	// Provide a bit of feedback for developers
+		        if( typeof callbackFunction === 'function' ){
+		            callbackFunction.call(thisElem, key, encodedString );	// This is the structure to use for our callbacks
+		        }
 				return true;
 			}
 		};
