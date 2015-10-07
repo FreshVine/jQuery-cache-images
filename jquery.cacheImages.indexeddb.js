@@ -186,7 +186,7 @@ window.indexedDB = window.indexedDB || window.mozIndexedDB || window.webkitIndex
 				}
 
 		        if( typeof callbackFunction === 'function' ){
-		            callbackFunction.call(thisElem, key, encodedString );	// This is the structure to use for our callbacks
+		            callbackFunction.call( url );	// This is the structure to use for our callbacks
 		        }
 				return true;
 			}
