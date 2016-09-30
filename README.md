@@ -17,7 +17,8 @@ $.fn.cacheImages.defaults.debug = true;	// Globally Set
 * *defaultImage*: URL or base64 string for the default image (will obviously get cached) - default is at assets/default.jpg  
 * *done*: callback when the cache was successfully fetched or placed  
 * *encodeOnCanvas*: Experimental use of the HTML5 canvas element to encode the images | Not recommended for production [default: false]  
-* *fail*: callback when the caching is not possible (unable to reach the file, or unable to cache file)
+* *fail*: callback when the caching is not possible (unable to reach the file, or unable to cache file, etc)
+* *start*: callback whenever an  item is set to be cached
 * *storagePrefix*: Used to prefix the URL in the localStorage key	[default: 'cached']  
 * *url*: Set the image URL to be cached for the selector [default: null]  
 * *forceSave*: Will force the call to cache to save the current URL even if media from that URL has already been cached. [default: false] **Don't set Globally** 

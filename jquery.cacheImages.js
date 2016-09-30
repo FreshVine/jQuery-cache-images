@@ -17,18 +17,18 @@
  *   http://www.gnu.org/licenses/gpl.html
  */
 (function ($) {
-	$.fn.cacheImages = function( options ) {
+	$.fn.cacheImages = function( options ){
 		// Set the defaults
 		this.cacheImagesConfig = $.extend( {}, $.fn.cacheImages.defaults, options );
 
 		// Check for canvas support
 		this.cacheImagesConfig.encodeOnCanvas = typeof HTMLCanvasElement != undefined ? this.cacheImagesConfig.encodeOnCanvas : false;
 
-		// Check for force Save regardless of current cached state
-		if( typeof this.cacheImagesConfig.forceSave == undefined ){ this.cacheImagesConfig.forceSave = false; }
-
 		var self = this;
 
+        if( typeof this.cacheImagesConfig.start === 'function' ){
+            self.cacheImagesConfig.start( this );	// This is the structure to use for our callbacks
+        }
 
 		/*
 		 * Ensure we have the default image cached and ready for use
@@ -68,15 +68,25 @@
 
 
 
-				if( typeof src === 'undefined' ){ return true; }	// Move to the next item
-				if( typeof $this.prop('src') !== 'undefined' && $this.prop('src').substring(0,5) === 'data:' ){ return true; }	// This has already been converted
+				if( typeof src === 'undefined' ){ 
+					// Move to the next item
+					self.cacheImagesConfig.fail.call( this );
+					self.cacheImagesConfig.always.call( this );
+					return true;
+				}
+				if( typeof $this.prop('src') !== 'undefined' && $this.prop('src').substring(0,5) === 'data:' ){
+					// This has already been converted
+					self.cacheImagesConfig.done.call( this );
+					self.cacheImagesConfig.always.call( this );
+					return true;
+				}
 				// Check if we can actually continue with this
 				//
 
 				var	key = self.cacheImagesConfig.storagePrefix + ':' + src;	// Prepare the image key
 				$.fn.cacheImages.get( $this, key, function( key, localSrcEncoded ){
-self.cacheImagesConfig.forceSave
-					if( localSrcEncoded && /^data:image/.test( localSrcEncoded ) && self.cacheImagesConfig.forceSave == false ) {
+
+					if( localSrcEncoded && /^data:image/.test( localSrcEncoded ) ) {
 						// Check if the image has already been cached, if it has lets bounce out of here
 						this.data('cachedImageSrc', src);
 						if( this.data('cachedImageType') == 'src' ){
@@ -165,6 +175,9 @@ self.cacheImagesConfig.forceSave
 											if( typeof self.cacheImagesConfig.defaultSrc !== 'undefined' ){
 												self.cacheImagesConfig.url = self.cacheImagesConfig.defaultImage;	// set the default if we can reach it
 												this.cacheImages(self.cacheImagesConfig);	
+
+												self.cacheImagesConfig.fail.call( this );
+												self.cacheImagesConfig.always.call( this );
 												return; // stop progression
 											}else{
 												if( this.data('cachedImageType') == 'src' ){
@@ -198,6 +211,7 @@ self.cacheImagesConfig.forceSave
 		encodeOnCanvas: false,	// This is still experimental and should be disabled in production
 		fail: function(){},	// Call back after unable to cache an image
 		ready: true,	// Force the caching to wait for a ready state before processing (for storage methods requiring connections be built)
+		start: function(){},	// Call back whenever an  item is set to be cached
 		storagePrefix: 'cached',	// Used to prefix the URL in at localStorage key
 		url: null	// Allows you to directly set the url for an element
 	};
@@ -316,13 +330,13 @@ self.cacheImagesConfig.forceSave
 	/*
 	 *	Manually cache an image into the local storage
 	 */
-	$.fn.cacheImages.fetchURL = function( url ){
+	$.fn.cacheImages.fetchURL = function( url, callback ){
 		$('body').append( $('<img style="display: none;" />').addClass('cacheImagesRemove').cacheImages({url: url}) );
 	};
 	/*
 	 *	Retreive the encoded string from local storage
 	 */
-	$.fn.cacheImages.Output = function( url, callbackFunction, storagePrefix ){
+	$.fn.cacheImages.Output = function( url, callback, storagePrefix ){
 		if( typeof storagePrefix === 'undefined' ){ storagePrefix = $.fn.cacheImages.defaults.storagePrefix; }
 		var tempKey = storagePrefix + ':' + url;
 		if( window.localStorage.getItem( tempKey ) != null ){
@@ -335,10 +349,6 @@ self.cacheImagesConfig.forceSave
 
 			tempKey = storagePrefix + ':' + this.cacheImagesConfig.defaultImage;
 			if( window.localStorage.getItem( tempKey ) != null ){
-		        if( typeof callbackFunction === 'function' ){
-		            callbackFunction.call( thisElem, tempKey );	// This is the structure to use for our callbacks
-		        }
-
 				return window.localStorage.getItem( tempKey );	// Default URL was already cached
 			}
 		}
@@ -348,11 +358,11 @@ self.cacheImagesConfig.forceSave
 	/*
 	 *	Will remove all of the cached images from their localStorage
 	 */
-	$.fn.cacheImages.drop = function( url, callbackFunction, storagePrefix ){
+	$.fn.cacheImages.drop = function( url, storagePrefix ){
 		var dropKeys = [],	// Store the keys we need to drop here
 			debug = false;
 		if( typeof storagePrefix === 'undefined' ){ storagePrefix = $.fn.cacheImages.defaults.storagePrefix; }
-		if( typeof url === 'undefined' ){ url = null; }	// DROP ALL THE THINGS
+		if( typeof url === 'undefined' ){ url = null; }
 
 		// Lets get our loop on
 		for (i = 0; i < window.localStorage.length; i++) {
@@ -364,20 +374,16 @@ self.cacheImagesConfig.forceSave
 
 		if( dropKeys.length ===  0 ){
 			if( $.fn.cacheImages.defaults.debug ){ console.log( 'No Images to Drop' ); }
-		}else{
-			// Drop the keys we found
-			for( i = 0; i < dropKeys.length; i++ ){
-				if( $.fn.cacheImages.defaults.debug ){ console.log( 'Dropping localStorage Key:', dropKeys[i] ); }	// Let them know what keys were dropped
-				window.localStorage.removeItem( dropKeys[i] );
-			}
-
-			if( $.fn.cacheImages.defaults.debug ){ console.log( 'Dropped ' + dropKeys.length + ' images from storage' ); }	// Provide a bit of feedback for developers
+			return;
 		}
 
-        if( typeof callbackFunction === 'function' ){
-            callbackFunction.call( url );	// This is the structure to use for our callbacks
-        }
+		// Drop the keys we found
+		for( i = 0; i < dropKeys.length; i++ ){
+			if( $.fn.cacheImages.defaults.debug ){ console.log( 'Dropping localStorage Key:', dropKeys[i] ); }	// Let them know what keys were dropped
+			window.localStorage.removeItem( dropKeys[i] );
+		}
 
+		if( $.fn.cacheImages.defaults.debug ){ console.log( 'Dropped ' + dropKeys.length + ' images from storage' ); }	// Provide a bit of feedback for developers
 		return;
 	};
 })(jQuery);
