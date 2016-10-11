@@ -6,10 +6,6 @@
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no"><!-- please don't add "maximum-scale=1" here. It's bad for accessibility. -->
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-
-	<script type="text/javascript" src="assets/jquery-1.9.1.js"></script>
-	<script type="text/javascript" src="jquery.cacheImages.js"></script>
-	<!-- <script type="text/javascript" src="jquery.cacheImages.indexeddb.js"></script> --><!-- Uncomment this to test indexedDB storage -->
   </head>
   <body>
     
@@ -50,9 +46,14 @@
 		
 	</div>
 
+
+	<script src="assets/jquery-1.9.1.js" type="text/javascript" charset="utf-8"></script>
+	<script src="jquery.cacheImages.js" type="text/javascript" charset="utf-8"></script>
+	<!-- <script src="jquery.cacheImages.indexeddb.js" type="text/javascript" charset="utf-8"></script> --><!-- Uncomment this to test indexedDB storage -->
 	<script type="text/javascript">
 		// $.fn.cacheImages.defaults.defaultImage = 'http://upload.wikimedia.org/wikipedia/commons/f/f8/Monocle_with_gallery.jpg';
 		$.fn.cacheImages.defaults.debug = true;
+		$.fn.cacheImages.defaults.defaultImage = 'assets/no-image.png';
 		// $.fn.cacheImages.defaults.always = function(){
 		// 	console.log('finished running');
 		// };
