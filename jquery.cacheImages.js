@@ -344,8 +344,20 @@
 	/*
 	 *	Manually cache an image into the local storage
 	 */
-	$.fn.cacheImages.fetchURL = function( url, callback ){
-		$('body').append( $('<img style="display: none;" />').addClass('cacheImagesRemove').cacheImages({url: url}) );
+	$.fn.cacheImages.fetchURL = function( url, callbackFunction ){
+		var url;
+		$('body').append( 
+			$('<img style="display: none;" />')
+				.addClass('cacheImagesRemove')
+				.cacheImages({
+					url: url,
+					done: function( image ){ 
+						if( typeof callbackFunction == 'function' ){
+							callbackFunction.call( this, url, image );
+						}
+					}
+			})
+		);
 	};
 	/*
 	 *	Retreive the encoded string from local storage
