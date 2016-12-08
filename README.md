@@ -19,6 +19,7 @@ $.fn.cacheImages.defaults.debug = true;	// Globally Set
 * *encodeOnCanvas*: Experimental use of the HTML5 canvas element to encode the images | Not recommended for production [default: false]  
 * *fail*: callback when the caching is not possible (unable to reach the file, or unable to cache file, etc)
 * *start*: callback whenever an  item is set to be cached
+* *storageDB*: Type of database are we storing the cached data in [localStorage or indexedDB]
 * *storagePrefix*: Used to prefix the URL in the localStorage key	[default: 'cached']  
 * *url*: Set the image URL to be cached for the selector [default: null]  
 * *forceSave*: Will force the call to cache to save the current URL even if media from that URL has already been cached. [default: false] **Don't set Globally** 

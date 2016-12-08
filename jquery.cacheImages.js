@@ -236,6 +236,7 @@
 		forceSave: false,	// Do not set globally - forces the caching function to fetch a fresh copy to cache/display
 		ready: true,	// Force the caching to wait for a ready state before processing (for storage methods requiring connections be built)
 		start: function(){},	// Call back whenever an  item is set to be cached
+		storageDB: 'localStorage',	// Type of database are we storing the cached data in
 		storagePrefix: 'cached',	// Used to prefix the URL in at localStorage key
 		url: null	// Allows you to directly set the url for an element
 	};

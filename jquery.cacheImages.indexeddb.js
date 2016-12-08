@@ -9,7 +9,9 @@
  *   http://www.opensource.org/licenses/mit-license.php
  *   http://www.gnu.org/licenses/gpl.html
  */
-window.indexedDB = window.indexedDB || window.mozIndexedDB || window.webkitIndexedDB || window.msIndexedDB; // Unify browser prefixes to maintain sanity
+
+	window.indexedDB = window.indexedDB || window.mozIndexedDB || window.webkitIndexedDB || window.msIndexedDB; // Unify browser prefixes to maintain sanity
+	$.fn.cacheImages.defaults.storageDB = 'indexedDB';	// Incase you want to check if this library is being used
 	$.fn.cacheImages.defaults.ready = false;	// Ensure that we are ready to do check for a db connection to be active
 	if( $.fn.cacheImages.defaults.debug ){ console.log('FV.cacheImages: Using indexedDB '); }
 
