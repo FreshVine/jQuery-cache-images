@@ -140,7 +140,13 @@
 									if( this.is('.cacheImagesRemove') ){
 										this.remove();
 									}
+
+									self.cacheImagesConfig.done.call( this, newSrc );
+								}else{
+									self.cacheImagesConfig.fail.call( this );
 								}
+
+								self.cacheImagesConfig.always.call( this );
 							});
 						}
 						else{
