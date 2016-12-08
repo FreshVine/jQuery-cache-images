@@ -468,7 +468,7 @@
 		// Verify this is a correctly stored value with `data:image/TYPE;base64,`
 		if(includesMediaPrefix ){
 			if( /^data:image/.test( outputBase64EncodedString ) === false ){	// String must start with this content
-				if( $.fn.cacheImages.defaults.debug ){ console.log( 'FV.cacheImage.textOutput: Er1 - Missing data:image prefix' ); }
+				if( $.fn.cacheImages.defaults.debug ){ console.log( 'FV.cacheImage.textOutput: Er1 - Missing data image prefix' ); }
 				return false;
 			}
 			if( /;base64,/.test( outputBase64EncodedString ) === false ){  // string must include this after the image type. The syntax (between the semi-colon and comma) will restrict it to this location
