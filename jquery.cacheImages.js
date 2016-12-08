@@ -81,7 +81,7 @@
 					self.cacheImagesConfig.always.call( this );
 					return true;
 				}
-				if( typeof $this.prop('src') !== 'undefined' && $this.prop('src').substring(0,5) === 'data:' ){
+				if( typeof $this.prop('src') !== 'undefined' && $.fn.cacheImages.testOutput( $this.prop('src'), true ) ){
 					// Element has already been converted
 					self.cacheImagesConfig.done.call( this );
 					self.cacheImagesConfig.always.call( this );
@@ -137,7 +137,7 @@
 							$this.load(function () {
 								newSrc = $.fn.cacheImages.base64EncodeCanvas( img );	// Process the image
 								$.fn.cacheImages.set( this, key, newSrc );	// Save the media
-								if( src.substring(0,5) === 'data:' ){
+								if( $.fn.cacheImages.testOutput( newSrc, true ) ){
 									if( this.data('cachedImageType') == 'src' ){
 										this.prop('src', newSrc );
 									}else{
@@ -361,9 +361,17 @@
 				return $.fn.cacheImages.defaults.defaultImage;	// this is an encoded string
 			}
 
-			tempKey = storagePrefix + ':' + $.fn.cacheImages.defaults.defaultImage;
-			if( window.localStorage.getItem( tempKey ) != null ){
-				return window.localStorage.getItem( tempKey );	// Default URL was already cached
+		//
+		// Try to grab the default image
+		if( $.fn.cacheImages.testOutput( image, true ) == false ){
+			console.log( 'FV.cacheImage.Output: Failed to load image ' + url );
+			if( $.fn.cacheImages.testOutput( $.fn.cacheImages.defaults.defaultImage, true ) ){
+				image = $.fn.cacheImages.defaults.defaultImage;	// this is an encoded string
+			}else{
+				tempKey = storagePrefix + ':' + $.fn.cacheImages.defaults.defaultImage;
+				if( window.localStorage.getItem( tempKey ) != null ){
+					image = window.localStorage.getItem( tempKey );	// Default URL was already cached
+				}
 			}
 		}
 
