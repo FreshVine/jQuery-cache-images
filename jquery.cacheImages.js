@@ -24,6 +24,10 @@
 		// Check for canvas support
 		this.cacheImagesConfig.encodeOnCanvas = typeof HTMLCanvasElement != undefined ? this.cacheImagesConfig.encodeOnCanvas : false;
 
+		// Check for force saving
+		if( typeof this.cacheImagesConfig.forceSave !== 'boolean' ){ this.cacheImagesConfig.forceSave = false; }
+
+		// Keep these around for later
 		var self = this;
 
         if( typeof this.cacheImagesConfig.start === 'function' ){
@@ -86,7 +90,7 @@
 				var	key = self.cacheImagesConfig.storagePrefix + ':' + src;	// Prepare the image key
 				$.fn.cacheImages.get( $this, key, function( key, localSrcEncoded ){
 
-					if( localSrcEncoded && /^data:image/.test( localSrcEncoded ) ) {
+					if( self.cacheImagesConfig.forceSave == false && localSrcEncoded && $.fn.cacheImages.testOutput( localSrcEncoded ) ){
 						// Check if the image has already been cached, if it has lets bounce out of here
 						this.data('cachedImageSrc', src);
 						if( this.data('cachedImageType') == 'src' ){
@@ -216,6 +220,7 @@
 		done: function( image ){},	// Call back after the image has been cached
 		encodeOnCanvas: false,	// This is still experimental and should be disabled in production
 		fail: function(){},	// Call back after unable to cache an image
+		forceSave: false,	// Do not set globally - forces the caching function to fetch a fresh copy to cache/display
 		ready: true,	// Force the caching to wait for a ready state before processing (for storage methods requiring connections be built)
 		start: function(){},	// Call back whenever an  item is set to be cached
 		storagePrefix: 'cached',	// Used to prefix the URL in at localStorage key
