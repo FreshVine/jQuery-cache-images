@@ -178,7 +178,8 @@
 
 								$.fn.cacheImages.set( thisElem, key, newSrc, function( key, encodedString ){
 									// Default processing of the response
-									if( encodedString.length !== 0 && encodedString !== 'data:image/' + imgType + ';base64,'){	// it appended image data
+									if( $.fn.cacheImages.testOutput( encodedString, true ) ){
+										// it appended image data
 										if( this.data('cachedImageType') == 'src' ){
 											this.prop('src', encodedString );
 										}else{
