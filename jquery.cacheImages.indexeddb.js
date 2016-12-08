@@ -188,7 +188,7 @@
 				}
 
 		        if( typeof callbackFunction === 'function' ){
-		            callbackFunction.call( url );	// This is the structure to use for our callbacks
+		            callbackFunction.call( this, url );	// This is the structure to use for our callbacks
 		        }
 				return true;
 			}
