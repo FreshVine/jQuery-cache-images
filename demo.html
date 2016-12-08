@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <title>jQuery Cache Images v1.7 Plug-in Demo</title>
+    <title>jQuery Cache Images v1.8 Plug-in Demo</title>
 
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no"><!-- please don't add "maximum-scale=1" here. It's bad for accessibility. -->
@@ -9,7 +9,7 @@
   </head>
   <body>
     
-	<h1>jQuery Cache Images v1.7 Plug-in</h1>
+	<h1>jQuery Cache Images v1.8 Plug-in</h1>
 	<a href="index.html">Back to Index</a>
 
 	<p>Use the following buttons to perform some basic checks on the cache</p>
@@ -19,15 +19,15 @@
 		<button id="dropCache">Empty the Cache</button>
 		<button id="corruptCat">Corrupt the Cat Gif</button>
 	</p>
-	<div id="statWindow" style="text-align: center; border: 5px solid; min-height: 40px; margin: 15px;"></div>
+	<div id="statWindow" style="text-align: center; border: 5px solid; min-height: 40px; margin: 15px; padding: 10px;"></div>
 
 	<p>Images are kept in browser's Local Storage as a base64 encoded string. Below are three images and an image that links to a non-existant file so it shows the default.</p>
 
 	<div id="DemoImages">
-		<img id="test1" src="assets/x-all-the-things.png" />
-		<img id="test2" src="assets/cat.gif" />
-		<img id="test3" src="assets/warhol.jpg" />
-		<img id="test4" src="assets/broken-image-path.jpg" />
+		<img id="test1" src="assets/x-all-the-things.png" style="height: 175px;" />
+		<img id="test2" src="assets/cat.gif" style="height: 175px;" />
+		<img id="test3" src="assets/warhol.jpg" style="height: 175px;" />
+		<img id="test4" src="assets/this-image-path-does-not-exist.jpg" style="height: 175px;" />
 	</div>
 
 
@@ -43,7 +43,7 @@
 	</div>
 
 
-	<div id="flickrTest" style="text-align: center; border: 5px solid; min-height: 40px; margin: 15px;">
+	<div id="flickrTest" style="text-align: left; border: 5px solid; min-height: 40px; margin: 15px; padding: 10px;">
 		
 	</div>
 
@@ -77,6 +77,7 @@
 				if( $('#FlickrTags').val() === ''){
 					$('#FlickrTags').val('goat,pasture');
 				}
+
 				var jxhr = $.ajax( 'http://api.flickr.com/services/feeds/photos_public.gne?tags=paris,church&lang=en-us&format=json',
 							{ type: 'get',
 								dataType: 'jsonp',
@@ -110,7 +111,7 @@
 			for (i = 0; i < window.localStorage.length; i++) {
 				if( window.localStorage.key(i).substr( 0, storagePrefix.length + 1 ) !== storagePrefix + ':' ){ continue; }	// Does not match our prefix?
 
-				cacheKeys.push( window.localStorage.key(i) ); // Droping the keys here re-indexes the localStorage so that the offset in our loop is wrong
+				cacheKeys.push( window.localStorage.key(i).substr( storagePrefix.length+1 ) ); // Droping the keys here re-indexes the localStorage so that the offset in our loop is wrong
 			}
 
 			if( cacheKeys.length ===  0 ){
@@ -124,7 +125,10 @@
 				if(  window.localStorage.getItem( cacheKeys[i] ) === 'pending' ){ continue; }
 				if(  window.localStorage.getItem( cacheKeys[i] ) === 'error' ){ continue; }
 
-				container.append( $('<img />').prop( 'src', window.localStorage.getItem( cacheKeys[i] ) ).width('25%') );
+				$.fn.cacheImages.Output( cacheKeys[i], function( image ){
+					// console.log( image.substr(0, 50) );
+					container.append( $('<img />').prop( 'src', image ).height('175px') );
+				});
 			}
 
 			return true;
