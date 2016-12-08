@@ -77,11 +77,13 @@
 
 				if( typeof src === 'undefined' ){ 
 					// No URL found to cache - Move to the next item
+					if( $.fn.cacheImages.defaults.debug ){ console.log( 'FV.cacheImage: Error - no URI to load' ); }
 					self.cacheImagesConfig.fail.call( this );
 					self.cacheImagesConfig.always.call( this );
 					return true;
 				}
 				if( typeof $this.prop('src') !== 'undefined' && $.fn.cacheImages.testOutput( $this.prop('src'), true ) ){
+					if( $.fn.cacheImages.defaults.debug ){ console.log( 'FV.cacheImage: already displaying cached image' ); }
 					// Element has already been converted
 					self.cacheImagesConfig.done.call( this );
 					self.cacheImagesConfig.always.call( this );
@@ -102,11 +104,14 @@
 							this.css('background-image', 'url(' + localSrcEncoded + ')')
 						}
 
+						if( $.fn.cacheImages.defaults.debug ){ console.log( 'FV.cacheImage: Loaded from Cache - ' + src ); }
 						self.cacheImagesConfig.done.call( this, localSrcEncoded );
 						self.cacheImagesConfig.always.call( this );
 						return;
 					}else if( localSrcEncoded === 'pending' ){
 						// This is either not an image, or the URL is already being processed somewhere else
+						if( $.fn.cacheImages.defaults.debug ){ console.log( 'FV.cacheImage: Caching in Progress - ' + src ); }
+
 						self.cacheImagesConfig.fail.call( this );
 						self.cacheImagesConfig.always.call( this );
 						return;	// stop running
@@ -134,6 +139,8 @@
 						$.fn.cacheImages.set( this, key, 'pending', function( key, encodedString ){});	// Set it to pending while we fetch and process the media - will keep us from double teaming the same item
 
 						if( self.cacheImagesConfig.encodeOnCanvas && imgType !== 'gif' ){	// For some reason animated gifs do not correctly encode on the canvas
+							if( $.fn.cacheImages.defaults.debug ){ console.log( 'FV.cacheImage: Preparing to Cache : canvas - ' + src ); }
+							
 							$this.load(function () {
 								newSrc = $.fn.cacheImages.base64EncodeCanvas( img );	// Process the image
 								$.fn.cacheImages.set( this, key, newSrc );	// Save the media
@@ -157,6 +164,8 @@
 							});
 						}
 						else{
+							if( $.fn.cacheImages.defaults.debug ){ console.log( 'FV.cacheImage: Preparing to Cache : XHR ArrayBuffer - ' + src ); }
+
 							var xhr = new XMLHttpRequest(),
 								thisElem = this;
 							xhr.open('GET', src, true);
