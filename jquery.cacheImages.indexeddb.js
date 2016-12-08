@@ -124,20 +124,50 @@
 	/*
 	 *	Retreive the encoded string from local storage, passes the value to the callback function
 	 */
-	$.fn.cacheImages.Output = function( url, callbackFunction, storagePrefix ){
+	$.fn.cacheImages.Output = function( url, callbackFunction, storagePrefix, secondTry ){
 		if( typeof storagePrefix === 'undefined' || typeof storagePrefix === 'null' ){ storagePrefix = $.fn.cacheImages.defaults.storagePrefix; }
+		if( typeof secondTry !== 'boolean' ){ secondTry = false; }
 		var tempKey = storagePrefix + ':' + url,
 			thisElem = this;
 
 		var request = window.cacheImagesDb.transaction("offlineImages", "readonly").objectStore("offlineImages").get( tempKey );
 		request.onsuccess = function(e) {
 			var image = '';
-			if( typeof e.target.result !== 'undefined' && typeof e.target.result.image === 'string' && /^data:image/.test( e.target.result.image ) === true ){
+
+			// Lets try out this image
+			if( typeof e.target.result !== 'undefined' && typeof e.target.result.image === 'string' ){
 				image = e.target.result.image;
+				if( $.fn.cacheImages.testOutput( image, true ) == false ){
+					delete image;	// reset the variable to trigger default
+					if( secondTry == false ){
+						// - Force Fetch the URL again
+						// - Output the new Image
+						$('body').append( 
+							$('<img style="display: none;" />')
+								.addClass('cacheImagesRemove')
+								.cacheImages({
+									url: url,
+									forceSave: true,
+									storagePrefix: storagePrefix,
+									done: function( image ){ 
+										if( typeof callbackFunction == 'function' ){
+											$.fn.cacheImages.Output( url, callbackFunction, storagePrefix, true );
+										}
+									}
+							})
+						);
+						return;
+					}
+				}
 			}
 
-			if( image == '' ){
-				if( /^data:image/.test( $.fn.cacheImages.defaults.defaultImage ) === true ){
+
+
+			//
+			// Try to grab the default image
+			if( $.fn.cacheImages.testOutput( image, true ) == false ){
+				if( $.fn.cacheImages.defaults.debug ){ console.log( 'FV.cacheImage.Output: Failed to load image ' + url ); }
+				if( $.fn.cacheImages.testOutput( $.fn.cacheImages.defaults.defaultImage, true ) ){
 					image = $.fn.cacheImages.defaults.defaultImage;	// this is an encoded string
 				}else{
 					$.fn.cacheImages.Output( $.fn.cacheImages.defaults.defaultImage, callbackFunction, storagePrefix );	// pass the callback through
