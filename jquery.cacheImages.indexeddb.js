@@ -173,18 +173,18 @@
 				cursor.continue();
 			}else{
 				// No more matching records.
-				if( $.fn.cacheImages.defaults.debug ){ console.log('FV.cacheImages: No more matching records'); }
+				if( $.fn.cacheImages.defaults.debug ){ console.log('FV.cacheImages.drop: No more matching records'); }
 
 				if( dropKeys.length ===  0 ){
-					if( $.fn.cacheImages.defaults.debug ){ console.log( 'FV.cacheImages: No Images to Drop' ); } 
+					if( $.fn.cacheImages.defaults.debug ){ console.log( 'FV.cacheImages.drop: No Images to Drop' ); } 
 				}else{
 					// Drop the keys we found
 					for( i = 0; i < dropKeys.length; i++ ){
-						if( $.fn.cacheImages.defaults.debug ){console.log( 'FV.cacheImages: Dropping localStorage Key:', dropKeys[i] ); }	// Let them know what keys were dropped
+						if( $.fn.cacheImages.defaults.debug ){console.log( 'FV.cacheImages.drop: Dropping localStorage Key:', dropKeys[i] ); }	// Let them know what keys were dropped
 						window.cacheImagesDb.transaction("offlineImages", "readwrite").objectStore("offlineImages").delete( dropKeys[i] );
 					}
 
-					if( $.fn.cacheImages.defaults.debug ){ console.log( 'FV.cacheImages: Dropped ' + dropKeys.length + ' images from indexedDB' ); }	// Provide a bit of feedback for developers
+					if( $.fn.cacheImages.defaults.debug ){ console.log( 'FV.cacheImages.drop: Dropped ' + dropKeys.length + ' images from indexedDB' ); }	// Provide a bit of feedback for developers
 				}
 
 		        if( typeof callbackFunction === 'function' ){
