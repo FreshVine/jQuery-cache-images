@@ -95,7 +95,7 @@
 				var	key = self.cacheImagesConfig.storagePrefix + ':' + src;	// Prepare the image key
 				$.fn.cacheImages.get( $this, key, function( key, localSrcEncoded ){
 
-					if( self.cacheImagesConfig.forceSave == false && localSrcEncoded && $.fn.cacheImages.testOutput( localSrcEncoded ) ){
+					if( self.cacheImagesConfig.forceSave == false && localSrcEncoded && $.fn.cacheImages.testOutput( localSrcEncoded, true ) ){
 						// Check if the image has already been cached, if it has lets bounce out of here
 						this.data('cachedImageSrc', src);
 						if( this.data('cachedImageType') == 'src' ){
