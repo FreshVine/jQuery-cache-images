@@ -6,7 +6,7 @@
  *
  * @author Paul Prins
  * @link http://paulprins.net
- * @version 1.7.0
+ * @version 1.8.0
  * @requires jQuery v1.7 or later
  *
  * Official jQuery plugin page: 
@@ -104,7 +104,7 @@
 							this.css('background-image', 'url(' + localSrcEncoded + ')')
 						}
 
-						if( $.fn.cacheImages.defaults.debug ){ console.log( 'FV.cacheImage: Loaded from Cache - ' + src ); }
+						if( $.fn.cacheImages.defaults.debug ){ console.log( 'FV.cacheImage: Already Encoded' ); }
 						self.cacheImagesConfig.done.call( this, localSrcEncoded );
 						self.cacheImagesConfig.always.call( this );
 						return;
@@ -410,7 +410,7 @@
 		//
 		// Try to grab the default image
 		if( $.fn.cacheImages.testOutput( image, true ) == false ){
-			console.log( 'FV.cacheImage.Output: Failed to load image ' + url );
+			if( $.fn.cacheImages.defaults.debug ){ console.log( 'FV.cacheImage.Output: Failed to load image ' + url ); }
 			if( $.fn.cacheImages.testOutput( $.fn.cacheImages.defaults.defaultImage, true ) ){
 				image = $.fn.cacheImages.defaults.defaultImage;	// this is an encoded string
 			}else{

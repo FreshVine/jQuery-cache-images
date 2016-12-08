@@ -2,6 +2,7 @@
  * jQuery Cache Images - now saucier with indexedDB
  * Modifies the storage approach of the CacheImages to utilize indexedDB for storage
  *
+ * @version 1.8.0
  * Official jQuery plugin page: 
  * Find source on GitHub: https://github.com/FreshVine/jQuery-cache-image
  *
