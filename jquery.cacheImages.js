@@ -30,9 +30,12 @@
 		// Keep these around for later
 		var self = this;
 
+
+		// This is the structure to use for our callbacks
         if( typeof this.cacheImagesConfig.start === 'function' ){
-            self.cacheImagesConfig.start( this );	// This is the structure to use for our callbacks
+            self.cacheImagesConfig.start( this );
         }
+
 
 		/*
 		 * Ensure we have the default image cached and ready for use
@@ -73,13 +76,13 @@
 
 
 				if( typeof src === 'undefined' ){ 
-					// Move to the next item
+					// No URL found to cache - Move to the next item
 					self.cacheImagesConfig.fail.call( this );
 					self.cacheImagesConfig.always.call( this );
 					return true;
 				}
 				if( typeof $this.prop('src') !== 'undefined' && $this.prop('src').substring(0,5) === 'data:' ){
-					// This has already been converted
+					// Element has already been converted
 					self.cacheImagesConfig.done.call( this );
 					self.cacheImagesConfig.always.call( this );
 					return true;
@@ -235,7 +238,7 @@
 			return;
 		 }
 
-		if( $.fn.cacheImages.defaults.debug ){ console.log('localStorage not available'); }
+		if( $.fn.cacheImages.defaults.debug ){ console.log('FV.cacheImage: Error - localStorage not available'); }
 		return;
 	 };
 	/*
@@ -287,7 +290,7 @@
 
 			return canvas.toDataURL('image/' + imgType);
 		} catch (e) {
-			console && console.log(e);
+			if( $.fn.cacheImages.defaults.debug ){ console && console.log( 'FV.cacheImage.base64EncodeCanvas: Error while Encoding', e ); }
 			return 'error';
 		}
 	};
@@ -390,29 +393,33 @@
 
 		// Drop the keys we found
 		for( i = 0; i < dropKeys.length; i++ ){
-			if( $.fn.cacheImages.defaults.debug ){ console.log( 'Dropping localStorage Key:', dropKeys[i] ); }	// Let them know what keys were dropped
+			if( $.fn.cacheImages.defaults.debug ){ console.log( 'FV.cacheImage.drop: Dropping localStorage Key:', dropKeys[i] ); }	// Let them know what keys were dropped
 			window.localStorage.removeItem( dropKeys[i] );
 		}
 
-		if( $.fn.cacheImages.defaults.debug ){ console.log( 'Dropped ' + dropKeys.length + ' images from storage' ); }	// Provide a bit of feedback for developers
-		return;
+		if( $.fn.cacheImages.defaults.debug ){ console.log( 'FV.cacheImage.drop: Dropped ' + dropKeys.length + ' images from storage' ); }	// Provide a bit of feedback for developers
+		
+        if( typeof callbackFunction === 'function' ){
+            callbackFunction.call( this, url );	// This is the structure to use for our callbacks
+        }
+		
+		return url;
 	};
 	/*
 	 *	Verify that every output string is syntatically correct (true) or not (false)
 	 */
 	$.fn.cacheImages.testOutput = function( outputBase64EncodedString, includesMediaPrefix ){
 		if( typeof includesMediaPrefix === 'undefined'){ includesMediaPrefix = false }
-		if( $.fn.cacheImages.defaults.debug ){ console.log( 'Testing for encoding corruption.' ); }	// Provide a bit of feedback for developers
 
 		//
 		// Verify this is a correctly stored value with `data:image/TYPE;base64,`
 		if(includesMediaPrefix ){
 			if( /^data:image/.test( outputBase64EncodedString ) === false ){	// String must start with this content
-				if( $.fn.cacheImages.defaults.debug ){ console.log( 'Testing: Er1 - Missing data:image prefix' ); }
+				if( $.fn.cacheImages.defaults.debug ){ console.log( 'FV.cacheImage.textOutput: Er1 - Missing data:image prefix' ); }
 				return false;
 			}
 			if( /;base64,/.test( outputBase64EncodedString ) === false ){  // string must include this after the image type. The syntax (between the semi-colon and comma) will restrict it to this location
-				if( $.fn.cacheImages.defaults.debug ){ console.log( 'Testing: Er2 - Missing ;base64, prefix' ); }
+				if( $.fn.cacheImages.defaults.debug ){ console.log( 'FV.cacheImage.textOutput: Er2 - Missing ;base64, prefix' ); }
 				return false; 
 			}
 
@@ -421,7 +428,7 @@
 		}
 
 		if( outputBase64EncodedString.length == 0 ){	// String has no length
-			if( $.fn.cacheImages.defaults.debug ){ console.log( 'Testing: Er3 - No encoded value' ); }
+			if( $.fn.cacheImages.defaults.debug ){ console.log( 'FV.cacheImage.textOutput: Er3 - No encoded value' ); }
 			return false;
 		}
 
@@ -430,14 +437,14 @@
 				return true;	// true output here if valid base64 string
 			}
 
-			if( $.fn.cacheImages.defaults.debug ){ console.log( 'Testing: Er5 - Improperly encoded base64 value' ); }
+			if( $.fn.cacheImages.defaults.debug ){ console.log( 'FV.cacheImage.textOutput: Er5 - Improperly encoded base64 value' ); }
 	        return false;
 	    } catch (err) {
-			if( $.fn.cacheImages.defaults.debug ){ console.log( 'Testing: Er4 - Invalide base64 value' ); }
+			if( $.fn.cacheImages.defaults.debug ){ console.log( 'FV.cacheImage.textOutput: Er4 - Invalide base64 value' ); }
 	        return false;
 	    }
 
-		if( $.fn.cacheImages.defaults.debug ){ console.log( 'Testing: Er6 - You reached an unreachable point' ); }
+		if( $.fn.cacheImages.defaults.debug ){ console.log( 'FV.cacheImage.textOutput: Er6 - You reached an unreachable point' ); }
 		return false;
 	};
 })(jQuery);
