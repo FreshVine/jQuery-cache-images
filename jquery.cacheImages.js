@@ -362,16 +362,39 @@
 	/*
 	 *	Retreive the encoded string from local storage
 	 */
-	$.fn.cacheImages.Output = function( url, callback, storagePrefix ){
+	$.fn.cacheImages.Output = function( url, callbackFunction, storagePrefix, secondTry ){
 		if( typeof storagePrefix === 'undefined' ){ storagePrefix = $.fn.cacheImages.defaults.storagePrefix; }
-		var tempKey = storagePrefix + ':' + url;
-		if( window.localStorage.getItem( tempKey ) != null ){
-			return window.localStorage.getItem( tempKey );	// Image exists in the cache
-		}else{
+		if( typeof secondTry !== 'boolean' ){ secondTry = false; }
+		var tempKey = storagePrefix + ':' + url,
+			image;
 
-			if( /^data:image/.test( $.fn.cacheImages.defaults.defaultImage ) === true ){
-				return $.fn.cacheImages.defaults.defaultImage;	// this is an encoded string
+		//
+		// Lets fetch the image
+		if( window.localStorage.getItem( tempKey ) != null ){
+			image = window.localStorage.getItem( tempKey );	// Image exists in the cache
+			if( $.fn.cacheImages.testOutput( image, true ) == false ){
+				delete image;	// reset the variable to trigger default
+				if( secondTry == false ){
+					// - Force Fetch the URL again
+					// - Output the new Image
+					$('body').append( 
+						$('<img style="display: none;" />')
+							.addClass('cacheImagesRemove')
+							.cacheImages({
+								url: url,
+								forceSave: true,
+								storagePrefix: storagePrefix,
+								done: function( image ){ 
+									if( typeof callbackFunction == 'function' ){
+										$.fn.cacheImages.Output( url, callbackFunction, storagePrefix, true );
+									}
+								}
+						})
+					);
+					return;
+				}
 			}
+		}
 
 		//
 		// Try to grab the default image
@@ -387,7 +410,13 @@
 			}
 		}
 
-		return null;	// Neither the image or the cached version existsed
+		//
+		// Response time
+        if( typeof callbackFunction === 'function' ){
+            callbackFunction.call( this, image );	// This is the structure to use for our callbacks
+			return;
+        }
+    	return image;
 	};
 	/*
 	 *	Will remove all of the cached images from their localStorage
