@@ -17,6 +17,7 @@
 		<button id="cacheLoadAll">Display all cached images</button>
 		<button onclick="$('#statWindow').html('');">Empty Display</button>
 		<button id="dropCache">Empty the Cache</button>
+		<button id="corruptCat">Corrupt the Cat Gif</button>
 	</p>
 	<div id="statWindow" style="text-align: center; border: 5px solid; min-height: 40px; margin: 15px;"></div>
 
@@ -51,7 +52,6 @@
 	<script src="jquery.cacheImages.js" type="text/javascript" charset="utf-8"></script>
 	<!-- <script src="jquery.cacheImages.indexeddb.js" type="text/javascript" charset="utf-8"></script> --><!-- Uncomment this to test indexedDB storage -->
 	<script type="text/javascript">
-		// $.fn.cacheImages.defaults.defaultImage = 'http://upload.wikimedia.org/wikipedia/commons/f/f8/Monocle_with_gallery.jpg';
 		$.fn.cacheImages.defaults.debug = true;
 		$.fn.cacheImages.defaults.defaultImage = 'assets/no-image.png';
 		// $.fn.cacheImages.defaults.always = function(){
@@ -70,6 +70,9 @@
 			// $('#flickrTest').cacheImages({debug: true});
 			$(document).on('click','#dropCache', function(){ $.fn.cacheImages.drop();	});
 			$(document).on('click','#cacheLoadAll', function(){	cacheImagesShowAll( $('#statWindow') ); });
+			$(document).on('click','#corruptCat', function(){
+				localStorage['cached:' + window.location.origin + window.location.pathname.substr(0, window.location.pathname.length - 10) + '/assets/cat.gif'] = 'data:image/gif;base64,';
+			});
 			$(document).on('click','#FlickrTest', function(){
 				if( $('#FlickrTags').val() === ''){
 					$('#FlickrTags').val('goat,pasture');
