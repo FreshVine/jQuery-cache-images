@@ -50,10 +50,12 @@
 
 	<script src="assets/jquery-1.9.1.js" type="text/javascript" charset="utf-8"></script>
 	<script src="jquery.cacheImages.js" type="text/javascript" charset="utf-8"></script>
-	<!-- <script src="jquery.cacheImages.indexeddb.js" type="text/javascript" charset="utf-8"></script> --><!-- Uncomment this to test indexedDB storage -->
+	<!-- Uncomment the next line to test indexedDB storage -->
+	<!-- <script src="jquery.cacheImages.indexeddb.js" type="text/javascript" charset="utf-8"></script> -->
 	<script type="text/javascript">
 		$.fn.cacheImages.defaults.debug = true;
-		$.fn.cacheImages.defaults.defaultImage = 'assets/no-image.png';
+		$.fn.cacheImages.defaults.defaultImage = window.location.origin + window.location.pathname.substr(0, window.location.pathname.length - 10) + '/assets/no-image.png';
+
 		// $.fn.cacheImages.defaults.always = function(){
 		// 	console.log('finished running');
 		// };
@@ -63,6 +65,7 @@
 		// $.fn.cacheImages.defaults.fail = function(){
 		// 	console.log('Error Happened');
 		// };
+
 		$(document).ready(function(){
 			$('#DemoImages img').cacheImages();
 		});
@@ -71,7 +74,10 @@
 			$(document).on('click','#dropCache', function(){ $.fn.cacheImages.drop();	});
 			$(document).on('click','#cacheLoadAll', function(){	cacheImagesShowAll( $('#statWindow') ); });
 			$(document).on('click','#corruptCat', function(){
-				localStorage['cached:' + window.location.origin + window.location.pathname.substr(0, window.location.pathname.length - 10) + '/assets/cat.gif'] = 'data:image/gif;base64,';
+				$.fn.cacheImages.set(
+					this,
+					'cached:' + window.location.origin + window.location.pathname.substr(0, window.location.pathname.length - 10) + '/assets/cat.gif',
+					'data:image/gif;base64,totally not a valid image at all=' );
 			});
 			$(document).on('click','#FlickrTest', function(){
 				if( $('#FlickrTags').val() === ''){
@@ -108,12 +114,37 @@
 			if( typeof storagePrefix === 'undefined' ){ storagePrefix = 'cached'; }
 			var cacheKeys = [];	// Store the keys we need to drop here
 			// Lets get our loop on
-			for (i = 0; i < window.localStorage.length; i++) {
-				if( window.localStorage.key(i).substr( 0, storagePrefix.length + 1 ) !== storagePrefix + ':' ){ continue; }	// Does not match our prefix?
 
-				cacheKeys.push( window.localStorage.key(i).substr( storagePrefix.length+1 ) ); // Droping the keys here re-indexes the localStorage so that the offset in our loop is wrong
+			if( $.fn.cacheImages.defaults.storageDB == 'localStorage'  ){
+				// Using Local Storage
+				for (i = 0; i < window.localStorage.length; i++) {
+					if( window.localStorage.key(i).substr( 0, storagePrefix.length + 1 ) !== storagePrefix + ':' ){ continue; }	// Does not match our prefix?
+
+					cacheKeys.push( window.localStorage.key(i).substr( storagePrefix.length+1 ) ); // Droping the keys here re-indexes the localStorage so that the offset in our loop is wrong
+				}
+
+				cacheImagesDislayAll( container, cacheKeys );
+			}else{
+				// Using IndexedDB
+
+				var request = window.cacheImagesDb.transaction("offlineImages", "readonly").objectStore("offlineImages").openCursor();
+				request.onsuccess = function(e) {
+					var cursor = e.target.result;
+					if (cursor) {
+						// Called for each matching record.
+						if( cursor.value.key.substr( 0,storagePrefix.length + 1 ) === storagePrefix + ':' ){	// Does not match our prefix?
+							cacheKeys.push( cursor.value.key.substr( storagePrefix.length+1 ) );
+						}
+						cursor.continue();
+					}else{
+						cacheImagesDislayAll( container, cacheKeys );
+					}
+				};
 			}
 
+			return true;
+		},
+		cacheImagesDislayAll = function( container, cacheKeys ){
 			if( cacheKeys.length ===  0 ){
 				if( window.debug ){ console.log( 'No Images to Display' ); }
 				return true;
@@ -125,14 +156,20 @@
 				if(  window.localStorage.getItem( cacheKeys[i] ) === 'pending' ){ continue; }
 				if(  window.localStorage.getItem( cacheKeys[i] ) === 'error' ){ continue; }
 
-				$.fn.cacheImages.Output( cacheKeys[i], function( image ){
-					// console.log( image.substr(0, 50) );
-					container.append( $('<img />').prop( 'src', image ).height('175px') );
-				});
+				if( true ){
+					// Display using the cacheImages native function [Preferred]
+					container.append( $('<img />').height('175px').cacheImages({ url: cacheKeys[i] }));
+				}else{
+					// Display using teh cacheImages Output() function via the callback.
+					$.fn.cacheImages.Output( cacheKeys[i], function( image ){
+						// console.log( image.substr(0, 50) );
+						container.append( $('<img />').prop( 'src', image ).height('175px') );
+					});
+				}
 			}
 
 			return true;
-		};
+		}
 	</script>
   </body>
 </html>
