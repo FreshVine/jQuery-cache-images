@@ -33,7 +33,7 @@
 		/*
 		 * Ensure we have the default image cached and ready for use
 		 */
-		if( /^data:image/.test( this.cacheImagesConfig.defaultImage ) === false ){
+		if( $.fn.cacheImages.testOutput( this.cacheImagesConfig.defaultImage, true ) === false ){
 			this.cacheImagesConfig.defaultSrc = this.cacheImagesConfig.defaultImage;
 		}
 
