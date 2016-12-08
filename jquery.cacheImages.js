@@ -421,7 +421,7 @@
 	/*
 	 *	Will remove all of the cached images from their localStorage
 	 */
-	$.fn.cacheImages.drop = function( url, storagePrefix ){
+	$.fn.cacheImages.drop = function( url, callbackFunction, storagePrefix ){
 		var dropKeys = [],	// Store the keys we need to drop here
 			debug = false;
 		if( typeof storagePrefix === 'undefined' ){ storagePrefix = $.fn.cacheImages.defaults.storagePrefix; }
@@ -436,8 +436,12 @@
 		}
 
 		if( dropKeys.length ===  0 ){
-			if( $.fn.cacheImages.defaults.debug ){ console.log( 'No Images to Drop' ); }
-			return;
+			if( $.fn.cacheImages.defaults.debug ){ console.log( 'FV.cacheImage.drop: No Images to Drop' ); }
+
+	        if( typeof callbackFunction === 'function' ){
+	            callbackFunction.call( this, url );	// This is the structure to use for our callbacks
+	        }
+			return url;
 		}
 
 		// Drop the keys we found
