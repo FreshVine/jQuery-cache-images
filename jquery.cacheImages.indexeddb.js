@@ -11,7 +11,7 @@
  */
 window.indexedDB = window.indexedDB || window.mozIndexedDB || window.webkitIndexedDB || window.msIndexedDB; // Unify browser prefixes to maintain sanity
 	$.fn.cacheImages.defaults.ready = false;	// Ensure that we are ready to do check for a db connection to be active
-	if( $.fn.cacheImages.defaults.debug ){ console.log('cacheImages will use indexedDB '); }
+	if( $.fn.cacheImages.defaults.debug ){ console.log('FV.cacheImages: Using indexedDB '); }
 
 	/* -- Setup everything we need for the database -- */
 	var cacheImagesDb;	// used to hold the db reference
@@ -22,10 +22,10 @@ window.indexedDB = window.indexedDB || window.mozIndexedDB || window.webkitIndex
 	// Enable
 	$.fn.cacheImages.dbRequest.onerror = function(e) {
 		$.fn.cacheImages.defaults.indexedDbStatus = false;
-		if( $.fn.cacheImages.defaults.debug ){ console.log("Why didn't you allow my web app to use IndexedDB?!"); };
+		if( $.fn.cacheImages.defaults.debug ){ console.log("FV.cacheImages: Why didn't you allow my web app to use IndexedDB?!"); };
 	};
 	$.fn.cacheImages.dbRequest.onsuccess = function(e) {
-		if( $.fn.cacheImages.defaults.debug ){ console.log("IndexedDB open success. It is ready"); };
+		if( $.fn.cacheImages.defaults.debug ){ console.log("FV.cacheImages: IndexedDB open success. It is ready"); };
 		$.fn.cacheImages.defaults.ready = $.fn.cacheImages.defaults.indexedDbStatus = true;
 		window.cacheImagesDb = e.target.result;
 
@@ -35,13 +35,13 @@ window.indexedDB = window.indexedDB || window.mozIndexedDB || window.webkitIndex
 	};
 	//handle setup
 	$.fn.cacheImages.dbRequest.onupgradeneeded = function(e) {
-		if( $.fn.cacheImages.defaults.debug ){ console.log("running onupgradeneeded"); }
+		if( $.fn.cacheImages.defaults.debug ){ console.log("FV.cacheImages: running onupgradeneeded"); }
 		var thisDb = e.target.result;
 
 		//Create Note
 		if(!thisDb.objectStoreNames.contains("offlineImages")) {
 			// Structure is key, image
-			if( $.fn.cacheImages.defaults.debug ){ console.log("making the offlineImages objectstore"); }
+			if( $.fn.cacheImages.defaults.debug ){ console.log("FV.cacheImages: making the offlineImages objectstore"); }
 			var objectStore = thisDb.createObjectStore("offlineImages", { keyPath: "key" });
 		    var titleIndex = objectStore.createIndex("by_key", "key", {unique: true});
 		}
@@ -53,11 +53,11 @@ window.indexedDB = window.indexedDB || window.mozIndexedDB || window.webkitIndex
 	 *	Check if the client has this storage method available
 	 */
 	$.fn.cacheImages.storageAvailable = function( thisElem, i, img, callbackFunction ){
-		if( $.fn.cacheImages.defaults.debug ){ console.log('indexedDB availability check'); }
+		if( $.fn.cacheImages.defaults.debug ){ console.log('FV.cacheImages: indexedDB availability check'); }
 
 		if( $.fn.cacheImages.defaults.indexedDbStatus === true ){
 	        callbackFunction.call( thisElem, i, img );	// This is the structure to use for our callbacks
-			if( $.fn.cacheImages.defaults.debug ){ console.log('indexedDB already ready'); }
+			if( $.fn.cacheImages.defaults.debug ){ console.log('FV.cacheImages: indexedDB already ready'); }
 			return;
 		}
 
@@ -65,17 +65,17 @@ window.indexedDB = window.indexedDB || window.mozIndexedDB || window.webkitIndex
 			thisInterval = setInterval(function(){
 				intervalCount++;
 				if( $.fn.cacheImages.defaults.indexedDbStatus === true ){
-					if( $.fn.cacheImages.defaults.debug ){ console.log('indexedDB ready to use', 'indexedDB took ' + (intervalCount*50) + 'ms to conenct'); }
+					if( $.fn.cacheImages.defaults.debug ){ console.log('FV.cacheImages: indexedDB ready to use', 'indexedDB took ' + (intervalCount*50) + 'ms to conenct'); }
 			        callbackFunction.call( thisElem, i, img );	// This is the structure to use for our callbacks
 					clearInterval(thisInterval); return;
 				}
 				if( intervalCount >= 41 ){	// only run for 2 seconds max - if it isn't available then there are other issues at play
-					if( $.fn.cacheImages.defaults.debug ){ console.log('indexedDB did not load'); }
+					if( $.fn.cacheImages.defaults.debug ){ console.log('FV.cacheImages: indexedDB did not load'); }
 					clearInterval(thisInterval);
 					return;
 				}
 
-				if( $.fn.cacheImages.defaults.debug ){ console.log('indexedDB not yet available'); }
+				if( $.fn.cacheImages.defaults.debug ){ console.log('FV.cacheImages: indexedDB not yet available'); }
 			}, 50 );
 		return;
 	};
@@ -144,7 +144,7 @@ window.indexedDB = window.indexedDB || window.mozIndexedDB || window.webkitIndex
 			}
 
 	        if( typeof callbackFunction === 'function' ){
-	            callbackFunction.call( thisElem, image );	// This is the structure to use for our callbacks
+	            callbackFunction.call( this, image );	// This is the structure to use for our callbacks
 	        }
 		}
 
@@ -171,18 +171,18 @@ window.indexedDB = window.indexedDB || window.mozIndexedDB || window.webkitIndex
 				cursor.continue();
 			}else{
 				// No more matching records.
-				if( $.fn.cacheImages.defaults.debug ){ console.log('No more matching records'); }
+				if( $.fn.cacheImages.defaults.debug ){ console.log('FV.cacheImages: No more matching records'); }
 
 				if( dropKeys.length ===  0 ){
-					if( $.fn.cacheImages.defaults.debug ){ console.log( 'No Images to Drop' ); } 
+					if( $.fn.cacheImages.defaults.debug ){ console.log( 'FV.cacheImages: No Images to Drop' ); } 
 				}else{
 					// Drop the keys we found
 					for( i = 0; i < dropKeys.length; i++ ){
-						if( $.fn.cacheImages.defaults.debug ){console.log( 'Dropping localStorage Key:', dropKeys[i] ); }	// Let them know what keys were dropped
+						if( $.fn.cacheImages.defaults.debug ){console.log( 'FV.cacheImages: Dropping localStorage Key:', dropKeys[i] ); }	// Let them know what keys were dropped
 						window.cacheImagesDb.transaction("offlineImages", "readwrite").objectStore("offlineImages").delete( dropKeys[i] );
 					}
 
-					if( $.fn.cacheImages.defaults.debug ){ console.log( 'Dropped ' + dropKeys.length + ' images from indexedDB' ); }	// Provide a bit of feedback for developers
+					if( $.fn.cacheImages.defaults.debug ){ console.log( 'FV.cacheImages: Dropped ' + dropKeys.length + ' images from indexedDB' ); }	// Provide a bit of feedback for developers
 				}
 
 		        if( typeof callbackFunction === 'function' ){
