@@ -170,7 +170,7 @@
 										}
 
 										if( this.is('.cacheImagesRemove') ){	this.remove();	}
-										self.cacheImagesConfig.done.call( this, false );
+										self.cacheImagesConfig.done.call( this, encodedString );
 										self.cacheImagesConfig.always.call( this );
 										return;
 									}else{
