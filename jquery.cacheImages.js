@@ -343,11 +343,11 @@
 			return window.localStorage.getItem( tempKey );	// Image exists in the cache
 		}else{
 
-			if( /^data:image/.test( this.cacheImagesConfig.defaultImage ) === true ){
-				return this.cacheImagesConfig.defaultImage;	// this is an encoded string
+			if( /^data:image/.test( $.fn.cacheImages.defaults.defaultImage ) === true ){
+				return $.fn.cacheImages.defaults.defaultImage;	// this is an encoded string
 			}
 
-			tempKey = storagePrefix + ':' + this.cacheImagesConfig.defaultImage;
+			tempKey = storagePrefix + ':' + $.fn.cacheImages.defaults.defaultImage;
 			if( window.localStorage.getItem( tempKey ) != null ){
 				return window.localStorage.getItem( tempKey );	// Default URL was already cached
 			}
