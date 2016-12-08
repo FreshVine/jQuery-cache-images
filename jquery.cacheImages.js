@@ -386,4 +386,47 @@
 		if( $.fn.cacheImages.defaults.debug ){ console.log( 'Dropped ' + dropKeys.length + ' images from storage' ); }	// Provide a bit of feedback for developers
 		return;
 	};
+	/*
+	 *	Verify that every output string is syntatically correct (true) or not (false)
+	 */
+	$.fn.cacheImages.testOutput = function( outputBase64EncodedString, includesMediaPrefix ){
+		if( typeof includesMediaPrefix === 'undefined'){ includesMediaPrefix = false }
+		if( $.fn.cacheImages.defaults.debug ){ console.log( 'Testing for encoding corruption.' ); }	// Provide a bit of feedback for developers
+
+		//
+		// Verify this is a correctly stored value with `data:image/TYPE;base64,`
+		if(includesMediaPrefix ){
+			if( /^data:image/.test( outputBase64EncodedString ) === false ){	// String must start with this content
+				if( $.fn.cacheImages.defaults.debug ){ console.log( 'Testing: Er1 - Missing data:image prefix' ); }
+				return false;
+			}
+			if( /;base64,/.test( outputBase64EncodedString ) === false ){  // string must include this after the image type. The syntax (between the semi-colon and comma) will restrict it to this location
+				if( $.fn.cacheImages.defaults.debug ){ console.log( 'Testing: Er2 - Missing ;base64, prefix' ); }
+				return false; 
+			}
+
+			// Trim string to the 64 bit 
+			outputBase64EncodedString = outputBase64EncodedString.substr( outputBase64EncodedString.indexOf(';base64,') + 8 );
+		}
+
+		if( outputBase64EncodedString.length == 0 ){	// String has no length
+			if( $.fn.cacheImages.defaults.debug ){ console.log( 'Testing: Er3 - No encoded value' ); }
+			return false;
+		}
+
+	    try {
+			if( btoa(atob(outputBase64EncodedString)) == outputBase64EncodedString ){
+				return true;	// true output here if valid base64 string
+			}
+
+			if( $.fn.cacheImages.defaults.debug ){ console.log( 'Testing: Er5 - Improperly encoded base64 value' ); }
+	        return false;
+	    } catch (err) {
+			if( $.fn.cacheImages.defaults.debug ){ console.log( 'Testing: Er4 - Invalide base64 value' ); }
+	        return false;
+	    }
+
+		if( $.fn.cacheImages.defaults.debug ){ console.log( 'Testing: Er6 - You reached an unreachable point' ); }
+		return false;
+	};
 })(jQuery);

@@ -57,6 +57,13 @@ If you need to use an image in your inline css, or in another context where you 
   
 Helpful to clean up stored images from the cache without dropping everything stored. You can optionally set a *url*, and/or *storagePrefix* in the function to only drop specific image, or set of images.  
   
+### Error Handling  
+You made run into a situation where an image does not cache correctly. This may happen for any number of reasons (inability to fetch image, lack of storage space, etc). Using the built in output functions will also call the built in output tester. It will verify that the string includes the required pre-fixes, and is a valid base64 encoded string. If not it will attempt to fetch the image one more time.  
+  
+`$.fn.cacheImages.testOutput( *outputBase64EncodedString*, *includesMediaPrefix* );`  
+  
+  
+  
 ## indexDB and callbacks  
 One of the major differences between localstorage and indexDB is that the queries to the database happen out of the functional flow of your script. This means you must use callbacks to excecute scripts with the outcome, or after the conclusion of the previous script. Not using callbacks can result in weird behavior.
   
