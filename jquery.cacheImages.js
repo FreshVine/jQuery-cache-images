@@ -474,6 +474,11 @@
 	$.fn.cacheImages.testOutput = function( outputBase64EncodedString, includesMediaPrefix ){
 		if( typeof includesMediaPrefix === 'undefined'){ includesMediaPrefix = false }
 
+		// This will catch most of the use of this script without filling the console up
+		if( outputBase64EncodedString.length == 0 || outputBase64EncodedString == 'pending' || outputBase64EncodedString == 'error' || /^http/.test( outputBase64EncodedString ) == true ){ return false; }
+
+
+
 		//
 		// Verify this is a correctly stored value with `data:image/TYPE;base64,`
 		if(includesMediaPrefix ){
